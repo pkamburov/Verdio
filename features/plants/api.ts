@@ -9,21 +9,29 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  QueryDocumentSnapshot,
+  FirestoreDataConverter,
   Timestamp,
 } from "firebase/firestore";
-import type { Plant, PlantCreateInput } from "./types";
-import { exp } from "firebase/firestore/pipelines";
+import type { Plant, PlantCreateInput, PlantDoc } from "./types";
+
+const plantDocConverter: FirestoreDataConverter<PlantDoc> = {
+  toFirestore: (data) => data,
+  fromFirestore: (snap: QueryDocumentSnapshot) => snap.data() as PlantDoc,
+};
 
 function plantsCol(uid: string) {
-  return collection(db, "users", uid, "plants");
+  return collection(db, "users", uid, "plants").withConverter(
+    plantDocConverter,
+  );
 }
 
-function mapPlant(id: string, data: any): Plant {
-  const creeatedAt =
-    data?.creeatedAt instanceof Timestamp
-      ? data.creeatedAt.toMillis()
-      : typeof data?.creeatedAt === "number"
-        ? data.creeatedAt
+function mapPlant(id: string, data: PlantDoc): Plant {
+  const createdAt =
+    data?.createdAt instanceof Timestamp
+      ? data.createdAt.toMillis()
+      : typeof data?.createdAt === "number"
+        ? data.createdAt
         : Date.now();
 
   return {
@@ -32,7 +40,7 @@ function mapPlant(id: string, data: any): Plant {
     speciesId: String(data?.speciesId ?? ""),
     isIndoor: Boolean(data?.isIndoor),
     exposure: data?.exposure ?? null,
-    creeatedAt,
+    createdAt,
   };
 }
 
@@ -54,7 +62,9 @@ export async function createPlant(
 }
 
 export async function getPlant(uid: string, id: string): Promise<Plant | null> {
-  const ref = doc(db, "users", uid, "plants", id);
+  const ref = doc(db, "users", uid, "plants", id).withConverter(
+    plantDocConverter,
+  );
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
   return mapPlant(snap.id, snap.data());
@@ -62,4 +72,5 @@ export async function getPlant(uid: string, id: string): Promise<Plant | null> {
 
 export async function deletePlant(uid: string, id: string): Promise<void> {
   const ref = doc(db, "users", uid, "plants", id);
+  await deleteDoc(ref);
 }
