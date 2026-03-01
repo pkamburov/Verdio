@@ -8,10 +8,10 @@ export default function Home() {
         Smart plant tracking and care management for modern gardeners.
       </p>
       <Link
-        href="/garden"
+        href="/plants"
         className="mt-6 inline-block rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500"
       >
-        Your Garden
+        Your Plants
       </Link>
     </main>
   );
