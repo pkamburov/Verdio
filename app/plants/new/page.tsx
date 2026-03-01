@@ -27,8 +27,9 @@ export default function NewPlantPage() {
 
   async function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
+    if (!uid) return;
 
-    await addDoc(collection(db, "plants"), {
+    await addDoc(collection(db, "users", uid, "plants"), {
       uid,
       name,
       speciesId,
