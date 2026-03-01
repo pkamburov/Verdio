@@ -1,12 +1,16 @@
 import { Timestamp } from "firebase/firestore";
 
+export const POSITIONS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"] as const;
+export type Position = (typeof POSITIONS)[number];
+
 export type Plant = {
   id: string;
   name: string;
-  speciesId: string;
+  speciesId?: string;
+  position?: Position;
   isIndoor: boolean;
   exposure?: string | null;
-  createdAt: number;
+  createdAt?: any;
 };
 
 export type PlantCreateInput = {
