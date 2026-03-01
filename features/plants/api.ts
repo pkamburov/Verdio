@@ -9,68 +9,67 @@ import {
   orderBy,
   query,
   serverTimestamp,
-  QueryDocumentSnapshot,
-  FirestoreDataConverter,
-  Timestamp,
+  updateDoc,
 } from "firebase/firestore";
-import type { Plant, PlantCreateInput, PlantDoc } from "./types";
-
-const plantDocConverter: FirestoreDataConverter<PlantDoc> = {
-  toFirestore: (data) => data,
-  fromFirestore: (snap: QueryDocumentSnapshot) => snap.data() as PlantDoc,
-};
+import type { Plant, PlantCreateInput, UpdatePlantInput } from "./types";
 
 function plantsCol(uid: string) {
-  return collection(db, "users", uid, "plants").withConverter(
-    plantDocConverter,
-  );
+  return collection(db, "users", uid, "plants");
 }
 
-function mapPlant(id: string, data: PlantDoc): Plant {
-  const createdAt =
-    data?.createdAt instanceof Timestamp
-      ? data.createdAt.toMillis()
-      : typeof data?.createdAt === "number"
-        ? data.createdAt
-        : Date.now();
-
-  return {
-    id,
-    name: String(data?.name ?? ""),
-    speciesId: String(data?.speciesId ?? ""),
-    isIndoor: Boolean(data?.isIndoor),
-    exposure: data?.exposure ?? null,
-    createdAt,
-  };
+function plantDoc(uid: string, plantId: string) {
+  return doc(db, "users", uid, "plants", plantId);
 }
 
 export async function listPlants(uid: string): Promise<Plant[]> {
   const q = query(plantsCol(uid), orderBy("createdAt", "desc"));
   const snap = await getDocs(q);
-  return snap.docs.map((d) => mapPlant(d.id, d.data()));
+  return snap.docs.map((d) => {
+    const data = d.data() as Omit<Plant, "id">;
+    return { id: d.id, ...data };
+  });
 }
 
-export async function createPlant(
-  uid: string,
-  input: PlantCreateInput,
-): Promise<string> {
-  const ref = await addDoc(plantsCol(uid), {
+export async function createPlant(uid: string, input: PlantCreateInput) {
+  const payload = {
     ...input,
+    speciesId: input.speciesId?.trim() || null,
+    exposure: input.exposure || null,
+    position: input.position ?? null,
     createdAt: serverTimestamp(),
-  });
+    updatedAt: serverTimestamp(),
+  };
+
+  const ref = await addDoc(plantsCol(uid), payload);
   return ref.id;
 }
 
-export async function getPlant(uid: string, id: string): Promise<Plant | null> {
-  const ref = doc(db, "users", uid, "plants", id).withConverter(
-    plantDocConverter,
-  );
-  const snap = await getDoc(ref);
+export async function getPlant(
+  uid: string,
+  plantId: string,
+): Promise<Plant | null> {
+  const snap = await getDoc(plantDoc(uid, plantId));
   if (!snap.exists()) return null;
-  return mapPlant(snap.id, snap.data());
+  const data = snap.data() as Omit<Plant, "id">;
+  return { id: snap.id, ...data };
 }
 
-export async function deletePlant(uid: string, id: string): Promise<void> {
-  const ref = doc(db, "users", uid, "plants", id);
-  await deleteDoc(ref);
+export async function updatePlant(
+  uid: string,
+  plantId: string,
+  patch: UpdatePlantInput,
+) {
+  const payload = {
+    ...patch,
+    speciesId: patch.speciesId?.trim() || null,
+    exposure: patch.exposure ?? null,
+    position: patch.position ?? null,
+    updatedAt: serverTimestamp(),
+  };
+
+  await updateDoc(plantDoc(uid, plantId), payload);
+}
+
+export async function deletePlant(uid: string, plantId: string): Promise<void> {
+  await deleteDoc(plantDoc(uid, plantId));
 }
