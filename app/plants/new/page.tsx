@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createPlant } from "@/features/plants/api";
 import { POSITIONS, Position } from "@/features/plants/types";
+import { useSpecies } from "@/features/species/useSpecies";
+import SpeciesCombobox from "@/features/species/components/SpeciesCombobox";
+
 import type { Exposure } from "@/features/plants/types";
 
 export default function NewPlantPage() {
@@ -12,10 +15,12 @@ export default function NewPlantPage() {
   const router = useRouter();
 
   const [name, setName] = useState("");
-  const [speciesId, setSpeciesId] = useState("");
+  const [speciesId, setSpeciesId] = useState<string | null>(null);
   const [isIndoor, setIsIndoor] = useState(true);
   const [exposure, setExposure] = useState<Exposure | "">("");
   const [position, setPosition] = useState<Position | "">("");
+
+  const { species, loading: speciesLoading } = useSpecies();
 
   useEffect(() => {
     if (!loading && !uid) {
@@ -33,7 +38,7 @@ export default function NewPlantPage() {
 
     await createPlant(uid, {
       name,
-      speciesId,
+      speciesId: speciesId || undefined,
       position: position || null,
       isIndoor,
       exposure: exposure || null,
@@ -56,12 +61,15 @@ export default function NewPlantPage() {
             required
           />
 
-          <input
-            className="w-full rounded-xl border p-2"
-            placeholder="Species ID"
-            value={speciesId}
-            onChange={(e) => setSpeciesId(e.target.value)}
-          />
+          {speciesLoading ? (
+            <div className="text-sm text-neutral-500">Loading species...</div>
+          ) : (
+            <SpeciesCombobox
+              species={species}
+              value={speciesId}
+              onChange={setSpeciesId}
+            />
+          )}
 
           <select
             className="w-full rounded-xl border p-2"
