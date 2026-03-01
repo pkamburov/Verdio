@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
+import { POSITIONS, Position } from "@/features/plants/types";
 
 export default function NewPlantPage() {
   const { uid, loading } = useAuth();
@@ -14,6 +15,7 @@ export default function NewPlantPage() {
   const [speciesId, setSpeciesId] = useState("");
   const [isIndoor, setIsIndoor] = useState(true);
   const [exposure, setExposure] = useState("");
+  const [position, setPosition] = useState<Position | "">("");
 
   useEffect(() => {
     if (!loading && !uid) {
@@ -33,6 +35,7 @@ export default function NewPlantPage() {
       uid,
       name,
       speciesId,
+      position: position || null,
       isIndoor,
       exposure,
       createdAt: serverTimestamp(),
@@ -71,6 +74,19 @@ export default function NewPlantPage() {
             <option value="low">Low light</option>
             <option value="medium">Medium light</option>
             <option value="high">High light</option>
+          </select>
+
+          <select
+            className="w-full rounded-xl border p-2"
+            value={position}
+            onChange={(e) => setPosition(e.target.value as Position)}
+          >
+            <option value="">Select position</option>
+            {POSITIONS.map((pos) => (
+              <option key={pos} value={pos}>
+                {pos}
+              </option>
+            ))}
           </select>
 
           <label className="flex items-center gap-2">
