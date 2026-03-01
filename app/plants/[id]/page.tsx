@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
 import { useAuth } from "@/lib/auth/auth-context";
-import { getPlant } from "@/features/plants/api";
+import { getPlant, deletePlant } from "@/features/plants/api";
 import type { Plant } from "@/features/plants/types";
 
 function formatBgDate(d?: any) {
@@ -33,6 +33,7 @@ export default function PlantDetailsPage() {
   const [fetching, setFetching] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Auth guard
   useEffect(() => {
@@ -109,6 +110,22 @@ export default function PlantDetailsPage() {
     return <main className="p-8">—</main>;
   }
 
+  async function handleDelete() {
+    if (!uid) return;
+    if (!plantId) return;
+
+    const ok = confirm("Delete this plant? This action cannot be undone.");
+    if (!ok) return;
+
+    try {
+      setDeleting(true);
+      await deletePlant(uid, plantId);
+      router.push("/plants");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <main className="p-8">
       <div className="mx-auto max-w-2xl space-y-6">
@@ -120,12 +137,30 @@ export default function PlantDetailsPage() {
             </p>
           </div>
 
-          <Link
-            href="/plants"
-            className="shrink-0 rounded-xl border px-3 py-2 text-sm hover:bg-neutral-50"
-          >
-            Back
-          </Link>
+          <div className="shrink-0 flex items-center gap-2">
+            <Link
+              href={`/plants/${plant.id}/edit`}
+              className="rounded-xl border px-3 py-2 text-sm hover:bg-neutral-50"
+            >
+              Edit
+            </Link>
+
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="rounded-xl border px-3 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
+              title="Delete"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </button>
+
+            <Link
+              href="/plants"
+              className="rounded-xl border px-3 py-2 text-sm hover:bg-neutral-50"
+            >
+              Back
+            </Link>
+          </div>
         </div>
 
         <div className="rounded-2xl border p-4 space-y-3">
