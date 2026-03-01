@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { listPlants } from "../api";
 import type { Plant } from "../types";
+import Link from "next/link";
 
 export default function PlantList({ uid }: { uid: string }) {
   const [plants, setPlants] = useState<Plant[]>([]);
@@ -28,15 +29,17 @@ export default function PlantList({ uid }: { uid: string }) {
 
   return (
     <main className="mx-auto max-w-4xl p-8">
-      <h1 className="text-xl font-semibold">My Plants</h1>
+      <h1 className="text-xl font-semibold">Your Plants</h1>
 
       <ul className="mt-6 space-y-4">
         {plants.map((plant) => (
           <li key={plant.id} className="rounded-xl border p-4">
-            <p className="font-medium">{plant.name}</p>
-            <p className="text-sm text-neutral-600">
-              {plant.speciesId} • {plant.isIndoor ? "Indoor" : "Outdoor"}
-            </p>
+            <Link href={"/plants/" + plant.id}>
+              <p className="font-medium">{plant.name}</p>
+              <p className="text-sm text-neutral-600">
+                {plant.speciesId} • {plant.isIndoor ? "Indoor" : "Outdoor"}
+              </p>
+            </Link>
           </li>
         ))}
       </ul>
