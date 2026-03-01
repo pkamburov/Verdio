@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { listSpecies, type Species } from "./api";
+import { listSpecies } from "./api";
+import type { Species } from "../species/types";
 
 export function useSpecies() {
   const [species, setSpecies] = useState<Species[]>([]);

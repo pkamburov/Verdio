@@ -35,19 +35,21 @@ export default function PlantsPage() {
 
   // Logged-in view
   return (
-    <div className="space-y-6 p-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Plants</h1>
+    <main className="mx-auto max-w-4xl px-4 py-10 items-center">
+      <div className="mx-auto max-w-4xl space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold">Plants</h1>
 
-        <Link
-          href="/plants/new"
-          className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition"
-        >
-          + Add Plant
-        </Link>
+          <Link
+            href="/plants/new"
+            className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition"
+          >
+            + Add Plant
+          </Link>
+        </div>
+
+        <PlantList uid={uid} />
       </div>
-
-      <PlantList uid={uid} />
-    </div>
+    </main>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import type { Species } from "../api";
+import type { Species } from "@/features/species/types";
 
 type Props = {
   species: Species[];
