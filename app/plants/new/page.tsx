@@ -3,9 +3,9 @@
 import { useAuth } from "@/lib/auth/auth-context";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase/client";
+import { createPlant } from "@/features/plants/api";
 import { POSITIONS, Position } from "@/features/plants/types";
+import type { Exposure } from "@/features/plants/types";
 
 export default function NewPlantPage() {
   const { uid, loading } = useAuth();
@@ -14,7 +14,7 @@ export default function NewPlantPage() {
   const [name, setName] = useState("");
   const [speciesId, setSpeciesId] = useState("");
   const [isIndoor, setIsIndoor] = useState(true);
-  const [exposure, setExposure] = useState("");
+  const [exposure, setExposure] = useState<Exposure | "">("");
   const [position, setPosition] = useState<Position | "">("");
 
   useEffect(() => {
@@ -31,14 +31,12 @@ export default function NewPlantPage() {
     e.preventDefault();
     if (!uid) return;
 
-    await addDoc(collection(db, "users", uid, "plants"), {
-      uid,
+    await createPlant(uid, {
       name,
       speciesId,
       position: position || null,
       isIndoor,
-      exposure,
-      createdAt: serverTimestamp(),
+      exposure: exposure || null,
     });
 
     router.push("/plants");
@@ -68,7 +66,7 @@ export default function NewPlantPage() {
           <select
             className="w-full rounded-xl border p-2"
             value={exposure}
-            onChange={(e) => setExposure(e.target.value)}
+            onChange={(e) => setExposure(e.target.value as Exposure | "")}
           >
             <option value="">Select exposure</option>
             <option value="low">Low light</option>
