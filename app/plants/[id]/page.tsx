@@ -13,6 +13,7 @@ import type { Species } from "@/features/species/types";
 import {
   formatEnDate,
   formatPlantExposure,
+  getScoreCopy,
 } from "@/features/plants/utils/format";
 import {
   formatExposureRange,
@@ -20,6 +21,8 @@ import {
   formatSpeciesPlacement,
   titleCaseWords,
 } from "@/features/species/utils/format";
+import { CardShell } from "@/features/plants/components/CardShell";
+import { CircularScore } from "@/features/plants/components/CircularProgress";
 
 export default function PlantDetailsPage() {
   const { uid, loading } = useAuth();
@@ -37,7 +40,8 @@ export default function PlantDetailsPage() {
   const [deleting, setDeleting] = useState(false);
 
   const speciesId = useMemo(() => plant?.speciesId?.trim() ?? "", [plant]);
-
+  const scorePercent = 70;
+  const { label: scoreLabel, hint: scoreHint } = getScoreCopy(scorePercent);
   useEffect(() => {
     let cancelled = false;
 
@@ -158,171 +162,117 @@ export default function PlantDetailsPage() {
 
   return (
     <main className="p-8">
-      <div className="mx-auto max-w-4xl space-y-6">
+      <div className="mx-auto max-w-5xl px-4 py-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="truncate text-2xl font-semibold">{plant.name}</h1>
+            <h1 className="truncate text-xl font-semibold text-neutral-900">
+              {plant.name}
+            </h1>
             <p className="mt-1 text-sm text-neutral-600">
-              {species?.commonName ?? plant.speciesId ?? "—"} •{" "}
-              {plant.isIndoor ? "Indoor" : "Outdoor"}
+              {species?.commonName ?? species?.latinName ?? "—"}
             </p>
           </div>
-
-          <div className="shrink-0 flex items-center gap-2">
-            <Link
-              href={`/plants/${plant.id}/edit`}
-              className="rounded-xl border px-3 py-2 text-sm hover:bg-neutral-50"
-            >
-              Edit
-            </Link>
-
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="rounded-xl border px-3 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
-              title="Delete"
-            >
-              {deleting ? "Deleting..." : "Delete"}
-            </button>
-
-            <Link
-              href="/plants"
-              className="rounded-xl border px-3 py-2 text-sm hover:bg-neutral-50"
-            >
-              Back
-            </Link>
-          </div>
         </div>
 
-        {/* Two cards */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* CARD 1: User plant */}
-          <section className="rounded-2xl border p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold">Your plant</h2>
-              {/* future: score pill */}
-              {/* <span className="text-xs rounded-full border px-2 py-1">Score: 82%</span> */}
+        {/* Score card */}
+        <section className="mt-6 rounded-2xl border border-neutral-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-medium text-neutral-900">
+                Plant match score
+              </p>
+              <p className="mt-1 text-sm text-neutral-600">
+                Based on how your plant data compares to the species ideal.
+              </p>
             </div>
 
-            {/* Image placeholder */}
-            <div className="overflow-hidden rounded-2xl border bg-neutral-50">
-              <div className="aspect-[4/3] w-full grid place-items-center">
-                <div className="text-center">
-                  <p className="text-sm font-medium text-neutral-700">
-                    No photo yet
-                  </p>
-                  <p className="mt-1 text-xs text-neutral-500">Placeholder</p>
-                </div>
+            <div className="flex items-center gap-4">
+              <CircularScore value={scorePercent} size={72} />
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-neutral-900">
+                  {scoreLabel}
+                </p>
+                <p className="text-sm text-neutral-600">{scoreHint}</p>
               </div>
             </div>
+          </div>
 
-            <div className="space-y-3">
-              <Row label="Name" value={plant.name} />
-              <Row
-                label="Indoor / Outdoor"
-                value={plant.isIndoor ? "Indoor" : "Outdoor"}
-              />
-              <Row label="Position / Placement" value={plant.position ?? "—"} />
-              <Row
-                label="Exposure"
-                value={formatPlantExposure(plant.exposure)}
-              />
-              <Row label="Added on" value={formatEnDate(plant.createdAt)} />
-              <Row label="Last update" value={formatEnDate(plant.updatedAt)} />
-            </div>
-          </section>
-
-          {/* CARD 2: Species */}
-          <section className="rounded-2xl border p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold">Species</h2>
-              {speciesLoading ? (
-                <span className="text-xs text-neutral-500">Loading…</span>
-              ) : null}
-            </div>
-
-            {!plant.speciesId ? (
-              <p className="text-sm text-neutral-600">No species selected.</p>
-            ) : !species ? (
+          {/* Optional: quick insights row */}
+          <div className="border-t border-neutral-200 px-4 py-3">
+            <div className="flex flex-wrap gap-2">
+              {/* Render badges/warnings later */}
+              {/* <StatusPill tone="warn">Low humidity</StatusPill> */}
+              {/* <StatusPill tone="bad">Too little light</StatusPill> */}
               <p className="text-sm text-neutral-600">
-                Species not found for id:{" "}
-                <span className="font-mono text-xs">{plant.speciesId}</span>
+                Add insights here (e.g., “Light is below ideal”, “Watering OK”,
+                etc.)
               </p>
-            ) : (
-              <>
-                <div className="space-y-3">
-                  <Row label="Common name" value={species.commonName ?? "—"} />
-                  <Row label="Latin name" value={species.latinName ?? "—"} />
-                  <Row
-                    label="Indoor / Outdoor"
-                    value={
-                      species.indoorOutdoor
-                        ? formatIndoorOutdoor(species.indoorOutdoor)
-                        : "—"
-                    }
-                  />
-                  <Row
-                    label="Optimal placement"
-                    value={formatSpeciesPlacement(species.optimalPositioning)}
-                  />
-                  <Row
-                    label="Exposure"
-                    value={formatExposureRange(species.sunExposureHours)}
-                  />
-                </div>
+            </div>
+          </div>
+        </section>
 
-                {/* Care tips accordion */}
-                <div className="pt-2 space-y-2">
-                  <p className="text-sm font-semibold">Care tips</p>
+        {/* Two cards: mobile stacked, desktop side-by-side */}
+        <section className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <CardShell title="Your plant">
+            {/* Example: image placeholder */}
+            <div className="mb-4 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50">
+              <div className="aspect-4/3 w-full" />
+            </div>
+            <Row label="Exposure" value={plant.exposure ?? "—"} />
+            <Row label="Indoor" value={plant.isIndoor ? "Yes" : "No"} />
+            <Row label="Placement" value={plant.position ?? "—"} />
+            {/* ... */}
+          </CardShell>
 
-                  <AccordionItem title="Description">
-                    <p className="text-sm text-neutral-700">
-                      {species.description ?? "—"}
-                    </p>
-                  </AccordionItem>
+          <CardShell title="Species ideal">
+            {/* Species summary */}
+            <p className="text-sm text-neutral-600">
+              Read-only species profile (what “ideal” looks like).
+            </p>
 
-                  <AccordionItem title="Watering">
-                    <p className="text-sm font-medium text-neutral-800">
-                      {species.watering?.rule ?? "—"}
-                    </p>
-                    {species.watering?.notes ? (
-                      <p className="mt-2 text-sm text-neutral-700">
-                        {species.watering.notes}
-                      </p>
-                    ) : null}
-                  </AccordionItem>
-
-                  <AccordionItem title="Pruning">
-                    <p className="text-sm text-neutral-700">
-                      {species.pruningSeasons?.length
-                        ? species.pruningSeasons.map(titleCaseWords).join(", ")
-                        : "—"}
-                    </p>
-                  </AccordionItem>
-
-                  <AccordionItem title="Repotting">
-                    <p className="text-sm text-neutral-700">
-                      {species.repottingSeasons?.length
-                        ? species.repottingSeasons
-                            .map(titleCaseWords)
-                            .join(", ")
-                        : "—"}
-                    </p>
-                  </AccordionItem>
-
-                  <AccordionItem title="Pests">
-                    <p className="text-sm text-neutral-700">
-                      {species.commonPests?.length
-                        ? species.commonPests.map(titleCaseWords).join(", ")
-                        : "—"}
-                    </p>
-                  </AccordionItem>
-                </div>
-              </>
-            )}
-          </section>
-        </div>
+            <div className="mt-4">
+              <AccordionItem title="Description">
+                <p className="text-sm text-neutral-700">
+                  {species?.description ?? "—"}
+                </p>
+              </AccordionItem>
+              <AccordionItem title="Watering">
+                <p className="text-sm font-medium text-neutral-800">
+                  {species?.watering?.rule ?? "—"}
+                </p>
+                {species?.watering?.notes ? (
+                  <p className="mt-2 text-sm text-neutral-700">
+                    {species?.watering.notes}
+                  </p>
+                ) : null}
+              </AccordionItem>
+              <AccordionItem title="Pruning">
+                <p className="text-sm text-neutral-700">
+                  {species?.pruningSeasons?.length
+                    ? species.pruningSeasons.map(titleCaseWords).join(", ")
+                    : "—"}
+                </p>
+              </AccordionItem>
+              <AccordionItem title="Repotting">
+                <p className="text-sm text-neutral-700">
+                  {species?.repottingSeasons?.length
+                    ? species.repottingSeasons.map(titleCaseWords).join(", ")
+                    : "—"}
+                </p>
+              </AccordionItem>
+              <AccordionItem title="Pests">
+                <p className="text-sm text-neutral-700">
+                  {species?.commonPests?.length
+                    ? species.commonPests.map(titleCaseWords).join(", ")
+                    : "—"}
+                </p>
+              </AccordionItem>
+              {/* <AccordionItem title="Light">...</AccordionItem> */}
+              {/* <DetailRow label="Light" value={species.light ?? "—"} /> */}
+            </div>
+          </CardShell>
+        </section>
       </div>
     </main>
   );
