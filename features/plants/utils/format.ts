@@ -23,3 +23,14 @@ export function formatPlantExposure(exposure?: string | null) {
   const key = exposure.trim().toLowerCase();
   return EXPOSURE_LABELS[key] ?? exposure;
 }
+
+export function getScoreCopy(value: number) {
+  if (value >= 75)
+    return { label: "Looks great", hint: "Close to the species ideal." };
+  if (value >= 45)
+    return { label: "Needs attention", hint: "A few conditions are off." };
+  return {
+    label: "Needs changes",
+    hint: "Several conditions differ from ideal.",
+  };
+}
