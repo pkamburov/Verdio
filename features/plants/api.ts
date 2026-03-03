@@ -36,6 +36,8 @@ export async function createPlant(uid: string, input: PlantCreateInput) {
     speciesId: input.speciesId?.trim() || null,
     exposure: input.exposure || null,
     position: input.position ?? null,
+    imageUrl: null,
+    imagePath: null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
@@ -59,13 +61,29 @@ export async function updatePlant(
   plantId: string,
   patch: UpdatePlantInput,
 ) {
-  const payload = {
-    ...patch,
-    speciesId: patch.speciesId?.trim() || null,
-    exposure: patch.exposure ?? null,
-    position: patch.position ?? null,
+  const payload: Record<string, any> = {
     updatedAt: serverTimestamp(),
   };
+
+  if ("name" in patch) payload.name = patch.name;
+  if ("speciesId" in patch) payload.speciesId = patch.speciesId?.trim() || null;
+  if ("exposure" in patch) {
+    payload.exposure = patch.exposure ?? null;
+  }
+  if ("position" in patch) {
+    payload.position = patch.position ?? null;
+  }
+  if ("isIndoor" in patch) payload.isIndoor = patch.isIndoor;
+  if ("imageUrl" in patch) payload.imageUrl = patch.imageUrl ?? null;
+  if ("imagePath" in patch) payload.imagePath = patch.imagePath ?? null;
+
+  // const payload = {
+  //   ...patch,
+  //   speciesId: patch.speciesId?.trim() || null,
+  //   exposure: patch.exposure ?? null,
+  //   position: patch.position ?? null,
+  //   updatedAt: serverTimestamp(),
+  // };
 
   await updateDoc(plantDoc(uid, plantId), payload);
 }

@@ -19,7 +19,7 @@ export default function RootLayout({
         <div className="min-h-screen bg-linear-to-br from-green-50 via-emerald-50 to-teal-50">
           <AuthProvider>
             <NavBar />
-            <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+            <main className="mx-auto max-w-3xl px-4 py-8">{children}</main>
           </AuthProvider>
         </div>
       </body>

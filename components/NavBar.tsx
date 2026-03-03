@@ -37,7 +37,7 @@ export default function NavBar() {
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-emerald-100/70">
-      <div className="mx-auto max-w-6xl px-4 py-3">
+      <div className="mx-auto max-w-3xl px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           {/* Brand */}
           <Link href="/" className="flex items-center gap-2">
