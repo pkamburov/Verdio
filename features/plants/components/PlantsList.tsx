@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Droplets, Sun, CompassIcon } from "lucide-react";
+import { slugToTitle } from "../utils/format";
 
 export default function PlantList({ uid }: { uid: string }) {
   const [plants, setPlants] = useState<Plant[]>([]);
@@ -60,7 +61,7 @@ export default function PlantList({ uid }: { uid: string }) {
         <Link key={plant.id} href={`/plants/${plant.id}`}>
           <Card className="overflow-hidden bg-white/60 backdrop-blur-sm border-green-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer h-full">
             {/* Plant Image */}
-            <div className="relative h-48 overflow-hidden">
+            <div className="relative h-68 overflow-hidden">
               <img
                 src={plant.imageUrl || undefined}
                 className="w-full h-full object-cover"
@@ -90,7 +91,7 @@ export default function PlantList({ uid }: { uid: string }) {
                   {plant.name}
                 </h3>
                 <p className="text-sm text-gray-600 italic">
-                  {plant.speciesId}
+                  {slugToTitle(plant.speciesId)}
                 </p>
               </div>
 
