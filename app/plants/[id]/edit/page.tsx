@@ -11,6 +11,9 @@ import {
   type Exposure,
   type Position,
 } from "@/features/plants/types";
+import { slugToTitle } from "@/features/plants/utils/format";
+import SpeciesCombobox from "@/features/species/components/SpeciesCombobox";
+import { useSpecies } from "@/features/species/useSpecies";
 
 export default function EditPlantPage() {
   const { uid, loading } = useAuth();
@@ -26,9 +29,13 @@ export default function EditPlantPage() {
   // form state
   const [name, setName] = useState("");
   const [speciesId, setSpeciesId] = useState("");
+  const { species, loading: speciesLoading } = useSpecies();
   const [position, setPosition] = useState<Position | "">("");
   const [isIndoor, setIsIndoor] = useState(true);
   const [exposure, setExposure] = useState<Exposure | "">("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const latinName = slugToTitle(speciesId);
 
   // Auth guard
   useEffect(() => {
@@ -104,9 +111,14 @@ export default function EditPlantPage() {
     );
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
     if (!uid) return;
+
+    if (imageFile && imageFile.size > 2 * 1024 * 1024) {
+      alert("Image too large (max 2MB).");
+      return;
+    }
 
     setSaving(true);
     try {
@@ -146,11 +158,21 @@ export default function EditPlantPage() {
             required
           />
 
+          {speciesLoading ? (
+            <div className="text-sm text-neutral-500">Loading species...</div>
+          ) : (
+            <SpeciesCombobox
+              species={species}
+              value={speciesId}
+              onChange={setSpeciesId}
+            />
+          )}
+
           <input
+            type="file"
+            accept="image/*"
             className="w-full rounded-xl border p-2"
-            placeholder="Species ID"
-            value={speciesId}
-            onChange={(e) => setSpeciesId(e.target.value)}
+            onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
           />
 
           <select
