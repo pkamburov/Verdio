@@ -76,6 +76,7 @@ export async function updatePlant(
   if ("isIndoor" in patch) payload.isIndoor = patch.isIndoor;
   if ("imageUrl" in patch) payload.imageUrl = patch.imageUrl ?? null;
   if ("imagePath" in patch) payload.imagePath = patch.imagePath ?? null;
+  if ("lastWatered" in patch) payload.lastWatered = patch.lastWatered;
 
   // const payload = {
   //   ...patch,
