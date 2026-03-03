@@ -218,6 +218,10 @@ export default function PlantDetailsPage() {
             {/* Example: image placeholder */}
             <div className="mb-4 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50">
               <div className="aspect-4/3 w-full" />
+              <img
+                src={plant.imageUrl || undefined}
+                className="w-full h-full object-cover"
+              />
             </div>
             <Row label="Exposure" value={plant.exposure ?? "—"} />
             <Row label="Indoor" value={plant.isIndoor ? "Yes" : "No"} />

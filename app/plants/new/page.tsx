@@ -3,9 +3,10 @@
 import { useAuth } from "@/lib/auth/auth-context";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { createPlant } from "@/features/plants/api";
+import { createPlant, updatePlant } from "@/features/plants/api";
 import { POSITIONS, Position } from "@/features/plants/types";
 import { useSpecies } from "@/features/species/useSpecies";
+import { uploadPlantImage } from "@/features/plants/uploadPlantImage";
 import SpeciesCombobox from "@/features/species/components/SpeciesCombobox";
 
 import type { Exposure } from "@/features/plants/types";
@@ -19,6 +20,7 @@ export default function NewPlantPage() {
   const [isIndoor, setIsIndoor] = useState(true);
   const [exposure, setExposure] = useState<Exposure | "">("");
   const [position, setPosition] = useState<Position | "">("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const { species, loading: speciesLoading } = useSpecies();
 
@@ -36,13 +38,40 @@ export default function NewPlantPage() {
     e.preventDefault();
     if (!uid) return;
 
-    await createPlant(uid, {
+    if (imageFile && imageFile.size > 2 * 1024 * 1024) {
+      alert("Image too large (max 2MB).");
+      return;
+    }
+
+    let imageUrl: string | null = null;
+    let imagePath: string | null = null;
+
+    const plantId = await createPlant(uid, {
       name,
       speciesId: speciesId || undefined,
       position: position || null,
       isIndoor,
       exposure: exposure || null,
+      imageUrl,
+      imagePath,
     });
+
+    if (imageFile) {
+      try {
+        const uploaded = await uploadPlantImage({
+          uid,
+          plantId,
+          file: imageFile,
+        });
+
+        await updatePlant(uid, plantId, {
+          imageUrl: uploaded.url,
+          imagePath: uploaded.path,
+        });
+      } catch (err) {
+        console.error("Image upload failed:", err);
+      }
+    }
 
     router.push("/plants");
   }
@@ -71,15 +100,22 @@ export default function NewPlantPage() {
             />
           )}
 
+          <input
+            type="file"
+            accept="image/*"
+            className="w-full rounded-xl border p-2"
+            onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+          />
+
           <select
             className="w-full rounded-xl border p-2"
             value={exposure}
             onChange={(e) => setExposure(e.target.value as Exposure | "")}
           >
             <option value="">Select exposure</option>
-            <option value="low">Low light</option>
-            <option value="medium">Medium light</option>
-            <option value="high">High light</option>
+            <option value="low">Low light (2-4 hours/day)</option>
+            <option value="medium">Medium light (4-6 hours/day)</option>
+            <option value="high">High light (6+ hours/day)</option>
           </select>
 
           <select

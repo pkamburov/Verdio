@@ -10,6 +10,8 @@ export type Plant = {
   speciesId?: string;
   position?: Position | null;
   isIndoor: boolean;
+  imageUrl?: string | null;
+  imagePath?: string | null;
   exposure?: Exposure | "" | null;
   createdAt?: Timestamp | null;
   updatedAt?: Timestamp | null;
@@ -21,6 +23,8 @@ export type PlantCreateInput = {
   position?: Position | null;
   isIndoor: boolean;
   exposure?: Exposure | "" | null;
+  imageUrl?: string | null;
+  imagePath?: string | null;
 };
 
 export type UpdatePlantInput = Partial<PlantCreateInput>;
