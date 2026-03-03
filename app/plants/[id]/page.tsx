@@ -6,34 +6,28 @@ import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getPlant, deletePlant } from "@/features/plants/api";
 import { getSpeciesById } from "@/features/species/api";
-import { Row } from "@/features/plants/components/DetailRow";
-import { AccordionItem } from "@/features/species/components/AccordioinItem";
 import type { Plant } from "@/features/plants/types";
 import type { Species } from "@/features/species/types";
 import {
   formatEnDate,
   formatPlantExposure,
+  formatPlantPosition,
   getScoreCopy,
 } from "@/features/plants/utils/format";
-import {
-  formatExposureRange,
-  formatIndoorOutdoor,
-  formatSpeciesPlacement,
-  titleCaseWords,
-} from "@/features/species/utils/format";
-import { CardShell } from "@/features/plants/components/CardShell";
-import { CircularScore } from "@/features/plants/components/CircularProgress";
+
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { slugToTitle } from "@/features/plants/utils/format";
 import {
   ArrowLeft,
   Calendar,
   ClipboardList,
   Droplets,
-  MapPin,
+  CompassIcon,
   Sun,
 } from "lucide-react";
+import { titleCaseWords } from "@/features/species/utils/format";
 
 export default function PlantDetailsPage() {
   const { uid, loading } = useAuth();
@@ -73,7 +67,6 @@ export default function PlantDetailsPage() {
         if (!cancelled) setSpeciesLoading(false);
       }
     }
-
     run();
     return () => {
       cancelled = true;
@@ -185,7 +178,7 @@ export default function PlantDetailsPage() {
       <Card className="overflow-hidden bg-white/60 backdrop-blur-sm border-green-100">
         <div className="grid md:grid-cols-2 gap-6">
           {/* Plant Image */}
-          <div className="relative h-96 md:h-auto">
+          <div className="relative h-68 md:h-auto">
             <img
               src={plant.imageUrl || undefined}
               alt={plant.name}
@@ -207,20 +200,24 @@ export default function PlantDetailsPage() {
               <h1 className="text-4xl font-semibold text-green-900 mb-2">
                 {plant.name}
               </h1>
-              <p className="text-lg text-gray-600 italic">{plant.speciesId}</p>
+              <p className="text-lg text-gray-600 italic">
+                {slugToTitle(plant.speciesId)}
+              </p>
             </div>
-
-            {/* <div className="flex gap-2">
-              <Button className="bg-green-600 hover:bg-green-700 text-white">
-                <Edit className="w-4 h-4 mr-2" />
-                Edit Details
-              </Button>
-              <Button variant="outline" className="border-red-300 text-red-600 hover:bg-red-50">
-                <Trash2 className="w-4 h-4 mr-2" />
+            <div className="flex gap-2">
+              <Link href={`${plant.id}/edit`}>
+                <Button className="bg-green-600 hover:bg-green-700 text-white">
+                  Edit Details
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                className="border-red-300 text-red-600 hover:bg-red-50"
+                onClick={handleDelete}
+              >
                 Delete
               </Button>
-            </div> */}
-
+            </div>
             <div className="space-y-4 pt-4">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
@@ -228,10 +225,9 @@ export default function PlantDetailsPage() {
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Watering Schedule</p>
-                  {/* <p className="text-sm text-gray-600">{plant.wateringFrequency}</p> */}
-                  {/* <p className="text-sm text-gray-500 mt-1">
-                    Next watering: {formatDate(plant.nextWatering)}
-                  </p> */}
+                  <p className="text-sm text-gray-600">
+                    {species?.watering.rule}
+                  </p>
                 </div>
               </div>
 
@@ -240,20 +236,22 @@ export default function PlantDetailsPage() {
                   <Sun className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">
-                    Sunlight Requirements
+                  <p className="font-medium text-gray-900">Direct Sunlight</p>
+                  <p className="text-sm text-gray-600">
+                    {formatPlantExposure(plant.exposure)}
                   </p>
-                  {/* <p className="text-sm text-gray-600">{plant.sunlight}</p> */}
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
-                  <MapPin className="w-5 h-5 text-green-600" />
+                  <CompassIcon className="w-5 h-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">Location</p>
-                  <p className="text-sm text-gray-600">{plant.position}</p>
+                  <p className="font-medium text-gray-900">Position</p>
+                  <p className="text-sm text-gray-600">
+                    {formatPlantPosition(plant.position)}
+                  </p>
                 </div>
               </div>
 
@@ -263,54 +261,11 @@ export default function PlantDetailsPage() {
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Last Watered</p>
-                  {/* <p className="text-sm text-gray-600">{formatDate(plant.lastWatered)}</p> */}
+                  <p className="text-sm text-gray-600">
+                    {formatEnDate(plant.lastWatered)}
+                  </p>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Notes Section */}
-      <Card className="p-6 bg-white/60 backdrop-blur-sm border-green-100">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center shrink-0">
-            <ClipboardList className="w-5 h-5 text-teal-600" />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-xl font-semibold text-green-900 mb-2">
-              Care Notes
-            </h2>
-            {/* <p className="text-gray-700">{plant.notes}</p> */}
-          </div>
-        </div>
-      </Card>
-
-      {/* Care History */}
-      <Card className="p-6 bg-white/60 backdrop-blur-sm border-green-100">
-        <h2 className="text-xl font-semibold text-green-900 mb-4">
-          Care History
-        </h2>
-        <div className="space-y-3">
-          <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <div className="flex-1">
-              <p className="text-gray-900">Watered</p>
-              {/* <p className="text-sm text-gray-500">{formatDate(plant.lastWatered)}</p> */}
-            </div>
-          </div>
-          <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <div className="flex-1">
-              <p className="text-gray-900">Fertilized</p>
-              <p className="text-sm text-gray-500">February 15, 2026</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-            <div className="flex-1">
-              <p className="text-gray-900">Repotted</p>
-              <p className="text-sm text-gray-500">January 10, 2026</p>
             </div>
           </div>
         </div>
@@ -339,6 +294,227 @@ export default function PlantDetailsPage() {
           >
             Set Reminder
           </Button>
+        </div>
+      </Card>
+
+      {/* Species Guide */}
+      <Card className="p-6 bg-white/60 backdrop-blur-sm border-green-100">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
+            <Sun className="w-5 h-5 text-amber-600" />
+          </div>
+
+          <div className="flex-1">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-semibold text-green-900">
+                  Species Guide
+                </h2>
+                <p className="text-sm text-neutral-700 mt-1">
+                  {species?.commonName ?? slugToTitle(plant.speciesId)}{" "}
+                  {species?.latinName ? (
+                    <span className="text-neutral-500 italic">
+                      ({species.latinName})
+                    </span>
+                  ) : null}
+                </p>
+              </div>
+
+              {speciesLoading ? (
+                <span className="text-sm text-neutral-500">Loading…</span>
+              ) : null}
+            </div>
+
+            {/* Quick badges */}
+            <div className="mt-4 flex flex-wrap gap-2">
+              {species?.indoorOutdoor ? (
+                <Badge variant="outline">
+                  {species.indoorOutdoor === "both"
+                    ? "Indoor / Outdoor"
+                    : species.indoorOutdoor === "indoor"
+                      ? "Indoor"
+                      : "Outdoor"}
+                </Badge>
+              ) : null}
+
+              {(species?.sunExposureHours?.min != null ||
+                species?.sunExposureHours?.max != null) && (
+                <Badge variant="outline">
+                  Sun:{" "}
+                  {species.sunExposureHours.min != null &&
+                  species.sunExposureHours.max != null
+                    ? `${species.sunExposureHours.min}–${species.sunExposureHours.max}h`
+                    : species.sunExposureHours.min != null
+                      ? `≥${species.sunExposureHours.min}h`
+                      : species.sunExposureHours.max != null
+                        ? `≤${species.sunExposureHours.max}h`
+                        : "—"}
+                </Badge>
+              )}
+            </div>
+
+            {/* Accordion */}
+            <div className="mt-5 space-y-2">
+              <details className="rounded-xl border border-green-100 bg-white/40 p-4">
+                <summary className="cursor-pointer font-medium text-green-900">
+                  Overview
+                </summary>
+                <div className="mt-3 text-sm text-neutral-700 space-y-2">
+                  <p>{species?.description ?? "—"}</p>
+                  <p>
+                    <span className="font-medium text-neutral-900">
+                      Optimal positioning:{" "}
+                    </span>
+                    {species?.optimalPositioning?.length
+                      ? species.optimalPositioning.join(", ")
+                      : "—"}
+                  </p>
+                </div>
+              </details>
+
+              <details className="rounded-xl border border-green-100 bg-white/40 p-4">
+                <summary className="cursor-pointer font-medium text-green-900">
+                  Light
+                </summary>
+                <div className="mt-3 text-sm text-neutral-700 space-y-2">
+                  <p>
+                    <span className="font-medium text-neutral-900">
+                      Recommended sun hours:{" "}
+                    </span>
+                    {species?.sunExposureHours?.min != null ||
+                    species?.sunExposureHours?.max != null
+                      ? `${species.sunExposureHours.min ?? "—"}–${species.sunExposureHours.max ?? "—"}h`
+                      : "—"}
+                  </p>
+                  <p>
+                    <span className="font-medium text-neutral-900">
+                      Your exposure:{" "}
+                    </span>
+                    {formatPlantExposure(plant.exposure)}
+                  </p>
+                </div>
+              </details>
+
+              <details className="rounded-xl border border-green-100 bg-white/40 p-4">
+                <summary className="cursor-pointer font-medium text-green-900">
+                  Watering
+                </summary>
+                <div className="mt-3 text-sm text-neutral-700 space-y-2">
+                  <p>
+                    <span className="font-medium text-neutral-900">Rule: </span>
+                    {species?.watering?.rule ?? "—"}
+                  </p>
+                  <p>
+                    <span className="font-medium text-neutral-900">
+                      Notes:{" "}
+                    </span>
+                    {species?.watering?.notes ?? "—"}
+                  </p>
+                  <p>
+                    <span className="font-medium text-neutral-900">
+                      Last watered:{" "}
+                    </span>
+                    {formatEnDate(plant.lastWatered)}
+                  </p>
+                </div>
+              </details>
+
+              <details className="rounded-xl border border-green-100 bg-white/40 p-4">
+                <summary className="cursor-pointer font-medium text-green-900">
+                  Common pests
+                </summary>
+                <div className="mt-3 text-sm text-neutral-700">
+                  {species?.commonPests?.length ? (
+                    <ul className="list-disc pl-5 space-y-1">
+                      {species.commonPests.map((p) => (
+                        <li key={p}>{titleCaseWords(p)}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    "—"
+                  )}
+                </div>
+              </details>
+
+              <details className="rounded-xl border border-green-100 bg-white/40 p-4">
+                <summary className="cursor-pointer font-medium text-green-900">
+                  Seasonal care
+                </summary>
+                <div className="mt-3 text-sm text-neutral-700 space-y-2">
+                  <p>
+                    <span className="font-medium text-neutral-900">
+                      Pruning:{" "}
+                    </span>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {species?.pruningSeasons?.length
+                        ? species.pruningSeasons.map((p) => (
+                            <li key={p}>{titleCaseWords(p)}</li>
+                          ))
+                        : "—"}
+                    </ul>
+                  </p>
+                  <p>
+                    <span className="font-medium text-neutral-900">
+                      Repotting:{" "}
+                    </span>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {species?.repottingSeasons?.length
+                        ? species.repottingSeasons.map((r) => (
+                            <li key={r}>{titleCaseWords(r)}</li>
+                          ))
+                        : "—"}
+                    </ul>
+                  </p>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Notes Section */}
+      <Card className="p-6 bg-white/60 backdrop-blur-sm border-green-100">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center shrink-0">
+            <ClipboardList className="w-5 h-5 text-teal-600" />
+          </div>
+          <div className="flex-1 space-y-4">
+            <h2 className="text-xl font-semibold text-green-900 mb-2">
+              Care Notes
+            </h2>
+          </div>
+        </div>
+      </Card>
+
+      {/* Care History */}
+      <Card className="p-6 bg-white/60 backdrop-blur-sm border-green-100">
+        <h2 className="text-xl font-semibold text-green-900 mb-4">
+          Care History
+        </h2>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <div className="flex-1">
+              <p className="text-gray-900">Last Watered</p>
+              <p className="text-sm text-gray-500">
+                {formatEnDate(plant.lastWatered)}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div className="flex-1">
+              <p className="text-gray-900">Fertilized</p>
+              <p className="text-sm text-gray-500">February 15, 2026</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+            <div className="flex-1">
+              <p className="text-gray-900">Repotted</p>
+              <p className="text-sm text-gray-500">January 10, 2026</p>
+            </div>
+          </div>
         </div>
       </Card>
     </div>
