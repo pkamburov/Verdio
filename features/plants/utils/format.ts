@@ -12,6 +12,23 @@ export function formatEnDate(d?: any) {
   }
 }
 
+const POSITION_LABELS: Record<string, string> = {
+  S: "South",
+  SE: "South-East",
+  SW: "South-West",
+  N: "North",
+  NE: "North-East",
+  NW: "North-West",
+  E: "East",
+  W: "West",
+};
+
+export function formatPlantPosition(position?: string | null) {
+  if (!position) return "-";
+  const key = position.trim();
+  return POSITION_LABELS[key] ?? position;
+}
+
 const EXPOSURE_LABELS: Record<string, string> = {
   low: "Low: 2–4 hours",
   medium: "Medium: 4–6 hours",
@@ -33,4 +50,14 @@ export function getScoreCopy(value: number) {
     label: "Needs changes",
     hint: "Several conditions differ from ideal.",
   };
+}
+
+export function slugToTitle(slug: string | undefined): string | undefined {
+  if (!slug) {
+    return;
+  }
+  return slug
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
