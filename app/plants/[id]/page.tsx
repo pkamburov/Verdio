@@ -23,6 +23,17 @@ import {
 } from "@/features/species/utils/format";
 import { CardShell } from "@/features/plants/components/CardShell";
 import { CircularScore } from "@/features/plants/components/CircularProgress";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import {
+  ArrowLeft,
+  Calendar,
+  ClipboardList,
+  Droplets,
+  MapPin,
+  Sun,
+} from "lucide-react";
 
 export default function PlantDetailsPage() {
   const { uid, loading } = useAuth();
@@ -161,123 +172,175 @@ export default function PlantDetailsPage() {
   }
 
   return (
-    <main className="p-8">
-      <div className="mx-auto max-w-5xl px-4 py-6">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="truncate text-xl font-semibold text-neutral-900">
-              {plant.name}
-            </h1>
-            <p className="mt-1 text-sm text-neutral-600">
-              {species?.commonName ?? species?.latinName ?? "—"}
-            </p>
-          </div>
-        </div>
+    <div className="max-w-5xl mx-auto space-y-6">
+      {/* Back Button */}
+      <Link href="/plants">
+        <Button variant="ghost" className="text-gray-600 hover:text-green-700">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Plants
+        </Button>
+      </Link>
 
-        {/* Score card */}
-        <section className="mt-6 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+      {/* Main Plant Card */}
+      <Card className="overflow-hidden bg-white/60 backdrop-blur-sm border-green-100">
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Plant Image */}
+          <div className="relative h-96 md:h-auto">
+            <img
+              src={plant.imageUrl || undefined}
+              alt={plant.name}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute top-4 right-4">
+              {/* <Badge
+                variant="outline"
+                className={`${getHealthColor(plant.health)} backdrop-blur-sm text-base px-3 py-1`}
+              >
+                {plant.health}
+              </Badge> */}
+            </div>
+          </div>
+
+          {/* Plant Info */}
+          <div className="p-6 space-y-6">
             <div>
-              <p className="text-sm font-medium text-neutral-900">
-                Plant match score
-              </p>
-              <p className="mt-1 text-sm text-neutral-600">
-                Based on how your plant data compares to the species ideal.
-              </p>
+              <h1 className="text-4xl font-semibold text-green-900 mb-2">
+                {plant.name}
+              </h1>
+              <p className="text-lg text-gray-600 italic">{plant.speciesId}</p>
             </div>
 
-            <div className="flex items-center gap-4">
-              <CircularScore value={scorePercent} size={72} />
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-neutral-900">
-                  {scoreLabel}
-                </p>
-                <p className="text-sm text-neutral-600">{scoreHint}</p>
+            {/* <div className="flex gap-2">
+              <Button className="bg-green-600 hover:bg-green-700 text-white">
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Details
+              </Button>
+              <Button variant="outline" className="border-red-300 text-red-600 hover:bg-red-50">
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </Button>
+            </div> */}
+
+            <div className="space-y-4 pt-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                  <Droplets className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Watering Schedule</p>
+                  {/* <p className="text-sm text-gray-600">{plant.wateringFrequency}</p> */}
+                  {/* <p className="text-sm text-gray-500 mt-1">
+                    Next watering: {formatDate(plant.nextWatering)}
+                  </p> */}
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
+                  <Sun className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">
+                    Sunlight Requirements
+                  </p>
+                  {/* <p className="text-sm text-gray-600">{plant.sunlight}</p> */}
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+                  <MapPin className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Location</p>
+                  <p className="text-sm text-gray-600">{plant.position}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center shrink-0">
+                  <Calendar className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Last Watered</p>
+                  {/* <p className="text-sm text-gray-600">{formatDate(plant.lastWatered)}</p> */}
+                </div>
               </div>
             </div>
           </div>
+        </div>
+      </Card>
 
-          {/* Optional: quick insights row */}
-          <div className="border-t border-neutral-200 px-4 py-3">
-            <div className="flex flex-wrap gap-2">
-              {/* Render badges/warnings later */}
-              {/* <StatusPill tone="warn">Low humidity</StatusPill> */}
-              {/* <StatusPill tone="bad">Too little light</StatusPill> */}
-              <p className="text-sm text-neutral-600">
-                Add insights here (e.g., “Light is below ideal”, “Watering OK”,
-                etc.)
-              </p>
+      {/* Notes Section */}
+      <Card className="p-6 bg-white/60 backdrop-blur-sm border-green-100">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center shrink-0">
+            <ClipboardList className="w-5 h-5 text-teal-600" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-xl font-semibold text-green-900 mb-2">
+              Care Notes
+            </h2>
+            {/* <p className="text-gray-700">{plant.notes}</p> */}
+          </div>
+        </div>
+      </Card>
+
+      {/* Care History */}
+      <Card className="p-6 bg-white/60 backdrop-blur-sm border-green-100">
+        <h2 className="text-xl font-semibold text-green-900 mb-4">
+          Care History
+        </h2>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <div className="flex-1">
+              <p className="text-gray-900">Watered</p>
+              {/* <p className="text-sm text-gray-500">{formatDate(plant.lastWatered)}</p> */}
             </div>
           </div>
-        </section>
-
-        {/* Two cards: mobile stacked, desktop side-by-side */}
-        <section className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <CardShell title="Your plant">
-            {/* Example: image placeholder */}
-            <div className="mb-4 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50">
-              <div className="aspect-4/3 w-full" />
-              <img
-                src={plant.imageUrl || undefined}
-                className="w-full h-full object-cover"
-              />
+          <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div className="flex-1">
+              <p className="text-gray-900">Fertilized</p>
+              <p className="text-sm text-gray-500">February 15, 2026</p>
             </div>
-            <Row label="Exposure" value={plant.exposure ?? "—"} />
-            <Row label="Indoor" value={plant.isIndoor ? "Yes" : "No"} />
-            <Row label="Placement" value={plant.position ?? "—"} />
-            {/* ... */}
-          </CardShell>
-
-          <CardShell title="Species ideal">
-            {/* Species summary */}
-            <p className="text-sm text-neutral-600">
-              Read-only species profile (what “ideal” looks like).
-            </p>
-
-            <div className="mt-4">
-              <AccordionItem title="Description">
-                <p className="text-sm text-neutral-700">
-                  {species?.description ?? "—"}
-                </p>
-              </AccordionItem>
-              <AccordionItem title="Watering">
-                <p className="text-sm font-medium text-neutral-800">
-                  {species?.watering?.rule ?? "—"}
-                </p>
-                {species?.watering?.notes ? (
-                  <p className="mt-2 text-sm text-neutral-700">
-                    {species?.watering.notes}
-                  </p>
-                ) : null}
-              </AccordionItem>
-              <AccordionItem title="Pruning">
-                <p className="text-sm text-neutral-700">
-                  {species?.pruningSeasons?.length
-                    ? species.pruningSeasons.map(titleCaseWords).join(", ")
-                    : "—"}
-                </p>
-              </AccordionItem>
-              <AccordionItem title="Repotting">
-                <p className="text-sm text-neutral-700">
-                  {species?.repottingSeasons?.length
-                    ? species.repottingSeasons.map(titleCaseWords).join(", ")
-                    : "—"}
-                </p>
-              </AccordionItem>
-              <AccordionItem title="Pests">
-                <p className="text-sm text-neutral-700">
-                  {species?.commonPests?.length
-                    ? species.commonPests.map(titleCaseWords).join(", ")
-                    : "—"}
-                </p>
-              </AccordionItem>
-              {/* <AccordionItem title="Light">...</AccordionItem> */}
-              {/* <DetailRow label="Light" value={species.light ?? "—"} /> */}
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+            <div className="flex-1">
+              <p className="text-gray-900">Repotted</p>
+              <p className="text-sm text-gray-500">January 10, 2026</p>
             </div>
-          </CardShell>
-        </section>
-      </div>
-    </main>
+          </div>
+        </div>
+      </Card>
+
+      {/* Quick Actions */}
+      <Card className="p-6 bg-linear-to-r from-green-500 to-emerald-600 border-0 text-white">
+        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+        <div className="flex flex-wrap gap-3">
+          <Button
+            variant="secondary"
+            className="bg-white text-green-700 hover:bg-green-50"
+          >
+            <Droplets className="w-4 h-4 mr-2" />
+            Mark as Watered
+          </Button>
+          <Button
+            variant="secondary"
+            className="bg-white text-green-700 hover:bg-green-50"
+          >
+            Add Note
+          </Button>
+          <Button
+            variant="secondary"
+            className="bg-white text-green-700 hover:bg-green-50"
+          >
+            Set Reminder
+          </Button>
+        </div>
+      </Card>
+    </div>
   );
 }
