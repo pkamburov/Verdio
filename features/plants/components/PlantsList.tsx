@@ -12,6 +12,7 @@ import { slugToTitle } from "../utils/format";
 export default function PlantList({ uid }: { uid: string }) {
   const [plants, setPlants] = useState<Plant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [imageLoading, setImageLoading] = useState(true);
 
   const getHealthColor = (health: string) => {
     switch (health) {
@@ -62,9 +63,19 @@ export default function PlantList({ uid }: { uid: string }) {
           <Card className="overflow-hidden bg-white/60 backdrop-blur-sm border-green-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer h-full">
             {/* Plant Image */}
             <div className="relative h-68 overflow-hidden">
+              {imageLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-neutral-100">
+                  <div className="w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
               <img
                 src={plant.imageUrl || undefined}
-                className="w-full h-full object-cover"
+                alt={plant.name}
+                onLoad={() => setImageLoading(false)}
+                onError={() => setImageLoading(false)}
+                className={`h-full w-full object-cover transition-opacity duration-300 ${
+                  imageLoading ? "opacity-0" : "opacity-100"
+                }`}
               />
               <div className="absolute top-3 right-3">
                 {/* <Badge
