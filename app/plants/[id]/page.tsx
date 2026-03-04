@@ -45,8 +45,10 @@ export default function PlantDetailsPage() {
   const [deleting, setDeleting] = useState(false);
 
   const speciesId = useMemo(() => plant?.speciesId?.trim() ?? "", [plant]);
+
   const scorePercent = 70;
   const { label: scoreLabel, hint: scoreHint } = getScoreCopy(scorePercent);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -441,7 +443,7 @@ export default function PlantDetailsPage() {
                   Seasonal care
                 </summary>
                 <div className="mt-3 text-sm text-neutral-700 space-y-2">
-                  <p>
+                  <div>
                     <span className="font-medium text-neutral-900">
                       Pruning:{" "}
                     </span>
@@ -452,7 +454,7 @@ export default function PlantDetailsPage() {
                           ))
                         : "—"}
                     </ul>
-                  </p>
+                  </div>
                   <p>
                     <span className="font-medium text-neutral-900">
                       Repotting:{" "}
