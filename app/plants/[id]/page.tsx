@@ -455,7 +455,7 @@ export default function PlantDetailsPage() {
                         : "—"}
                     </ul>
                   </div>
-                  <p>
+                  <div>
                     <span className="font-medium text-neutral-900">
                       Repotting:{" "}
                     </span>
@@ -466,7 +466,7 @@ export default function PlantDetailsPage() {
                           ))
                         : "—"}
                     </ul>
-                  </p>
+                  </div>
                 </div>
               </details>
             </div>

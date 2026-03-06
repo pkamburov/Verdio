@@ -7,9 +7,14 @@ export async function getWeather(
   const params = new URLSearchParams({
     latitude: String(latitude),
     longitude: String(longitude),
-    current: "temperature_2m,wind_speed_10m,weather_code",
-    daily: "temperature_2m_max,temperature_2m_min,precipitation_sum",
+    current: "temperature_2m,wind_speed_10m,weather_code,relative_humidity_2m",
+    daily:
+      "temperature_2m_max,temperature_2m_min,precipitation_sum,uv_index_max",
     timezone: "auto",
+
+    temperature_unit: "celsius",
+    wind_speed_unit: "kmh",
+    precipitation_unit: "mm",
   });
 
   const url = `https://api.open-meteo.com/v1/forecast?${params.toString()}`;
@@ -27,6 +32,7 @@ export async function getWeather(
         windSpeed: data.current.wind_speed_10m,
         weatherCode: data.current.weather_code,
         time: data.current.time,
+        humidity: data.current.relative_humidity_2m,
       }
     : null;
 
@@ -39,6 +45,7 @@ export async function getWeather(
     tempMax: data.daily.temperature_2m_max[i],
     tempMin: data.daily.temperature_2m_min[i],
     precipitation: data.daily.precipitation_sum[i],
+    uvIndexMax: data.daily.uv_index_max[i],
   }));
 
   return {
