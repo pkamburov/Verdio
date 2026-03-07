@@ -92,3 +92,13 @@ export async function updatePlant(
 export async function deletePlant(uid: string, plantId: string): Promise<void> {
   await deleteDoc(plantDoc(uid, plantId));
 }
+
+export async function getPlants(uid: string) {
+  const q = query(plantsCol(uid), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+
+  return snap.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as Plant[];
+}
