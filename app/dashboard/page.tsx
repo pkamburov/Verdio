@@ -8,19 +8,25 @@ import { WeatherCard } from "@/components/ui/WeatherCard";
 import { WeatherData } from "@/features/weather/types";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useEffect, useMemo, useState } from "react";
-
-import { notifications } from "@/data/mock-data";
+import { generateDashboardTips } from "@/features/tips/utils";
+import { plants } from "@/data/mock-data";
+import { DashboardTip } from "@/features/tips/types";
+import { Plant } from "@/features/plants/types";
+import { getPlants } from "@/features/plants/api";
 
 export default function DashboardPage() {
   const { uid } = useAuth();
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [weatherError, setWeatherError] = useState<string | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
+  const [plants, setPlants] = useState<Plant[]>([]);
+  const [tips, setTips] = useState<DashboardTip[]>([]);
   const coords = useMemo(() => ({ latitude: 42.697, longitude: 23.3219 }), []);
 
   useEffect(() => {
     if (!uid) return;
     let cancelled = false;
+    const currentId = uid;
 
     async function run() {
       try {
@@ -28,6 +34,8 @@ export default function DashboardPage() {
         setWeatherError(null);
 
         const data = await getWeather(coords.latitude, coords.longitude);
+        const plantsData = await getPlants(currentId);
+        setPlants(plantsData);
 
         if (!cancelled) setWeatherData(data);
       } catch (e) {
@@ -42,6 +50,13 @@ export default function DashboardPage() {
       cancelled = true;
     };
   }, [uid, coords.latitude, coords.longitude]);
+
+  useEffect(() => {
+    if (!plants.length || !weatherData) return;
+
+    const generated = generateDashboardTips(plants, weatherData);
+    setTips(generated);
+  }, [plants, weatherData]);
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -97,12 +112,12 @@ export default function DashboardPage() {
             Notifications & Growing Tips
           </h2>
           <Badge variant="secondary" className="bg-green-100 text-green-700">
-            {notifications.length} active
+            {tips.length} active
           </Badge>
         </div>
 
         <div className="space-y-3">
-          {notifications.map((notification) => (
+          {tips.map((notification) => (
             <Card
               key={notification.id}
               className="p-4 bg-white/60 backdrop-blur-sm border-green-100 hover:shadow-md transition-shadow"
