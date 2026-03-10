@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase/firestore";
+
 export function formatEnDate(d?: any) {
   try {
     const date =
@@ -60,4 +62,19 @@ export function slugToTitle(slug: string | undefined): string | undefined {
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
+}
+
+export function getDaysSinceWatered(lastWatered?: Timestamp | null): string {
+  if (!lastWatered) return "Not watered yet";
+
+  const wateredDate = lastWatered.toDate();
+  const now = new Date();
+
+  const diffMs = now.getTime() - wateredDate.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "Watered today";
+  if (diffDays === 1) return "Watered yesterday";
+
+  return `${diffDays} days ago`;
 }
