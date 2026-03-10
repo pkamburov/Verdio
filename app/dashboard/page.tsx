@@ -9,7 +9,6 @@ import { WeatherData } from "@/features/weather/types";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useEffect, useMemo, useState } from "react";
 import { generateDashboardTips } from "@/features/tips/utils";
-import { plants } from "@/data/mock-data";
 import { DashboardTip } from "@/features/tips/types";
 import { Plant } from "@/features/plants/types";
 import { getPlants } from "@/features/plants/api";
@@ -88,7 +87,9 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="p-4 bg-white/60 backdrop-blur-sm border-green-100">
             <p className="text-sm text-gray-600">Total Plants</p>
-            <p className="text-3xl font-semibold text-green-800 mt-1">6</p>
+            <p className="text-3xl font-semibold text-green-800 mt-1">
+              {plants.length}
+            </p>
           </Card>
           <Card className="p-4 bg-white/60 backdrop-blur-sm border-green-100">
             <p className="text-sm text-gray-600">Need Water</p>
