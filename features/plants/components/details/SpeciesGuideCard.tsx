@@ -45,10 +45,6 @@ export function SpeciesGuideCard({
                 ) : null}
               </p>
             </div>
-
-            {speciesLoading ? (
-              <span className="text-sm text-neutral-500">Loading…</span>
-            ) : null}
           </div>
 
           {/* Quick badges */}
