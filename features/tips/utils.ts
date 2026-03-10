@@ -3,7 +3,7 @@ import type { Plant } from "@/features/plants/types";
 import type { WeatherData } from "@/features/weather/types";
 import type { DashboardTip, DashboardTipPriority } from "./types";
 
-function getDaysSince(timestamp?: Timestamp | null): number | null {
+export function getDaysSince(timestamp?: Timestamp | null): number | null {
   if (!timestamp) return null;
 
   const date = timestamp.toDate();
