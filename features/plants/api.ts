@@ -12,6 +12,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import type { Plant, PlantCreateInput, UpdatePlantInput } from "./types";
+import { Timestamp } from "firebase/firestore";
 
 function plantsCol(uid: string) {
   return collection(db, "users", uid, "plants");
@@ -78,14 +79,6 @@ export async function updatePlant(
   if ("imagePath" in patch) payload.imagePath = patch.imagePath ?? null;
   if ("lastWatered" in patch) payload.lastWatered = patch.lastWatered;
 
-  // const payload = {
-  //   ...patch,
-  //   speciesId: patch.speciesId?.trim() || null,
-  //   exposure: patch.exposure ?? null,
-  //   position: patch.position ?? null,
-  //   updatedAt: serverTimestamp(),
-  // };
-
   await updateDoc(plantDoc(uid, plantId), payload);
 }
 
@@ -101,4 +94,10 @@ export async function getPlants(uid: string) {
     id: doc.id,
     ...doc.data(),
   })) as Plant[];
+}
+
+export async function markAsWatered(uid: string, plantId: string) {
+  return updatePlant(uid, plantId, {
+    lastWatered: Timestamp.now(),
+  });
 }
