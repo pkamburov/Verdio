@@ -8,18 +8,11 @@ import { getPlant, deletePlant, markAsWatered } from "@/features/plants/api";
 import { getSpeciesById } from "@/features/species/api";
 import type { Plant } from "@/features/plants/types";
 import type { Species } from "@/features/species/types";
-import {
-  formatEnDate,
-  formatPlantExposure,
-  getScoreCopy,
-} from "@/features/plants/utils/format";
+import { getScoreCopy } from "@/features/plants/utils/format";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { slugToTitle } from "@/features/plants/utils/format";
 import { ArrowLeft, ClipboardList, Sun } from "lucide-react";
-import { titleCaseWords } from "@/features/species/utils/format";
 import { PlantHeaderCard } from "@/features/plants/components/details/PlantHeaderCard";
 import { QuickActionsCard } from "@/features/plants/components/details/QuickActionsCard";
 import { CareHistoryCard } from "@/features/plants/components/details/CareHistoryCard";
