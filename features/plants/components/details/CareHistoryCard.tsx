@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/Card";
 import { Plant } from "../../types";
-import { formatEnDate, getDaysSinceWatered } from "../../utils/format";
+import { getDaysSinceWatered } from "../../utils/format";
 
 type CareHistoryCardProps = {
   plant: Plant;
@@ -18,7 +18,7 @@ export function CareHistoryCard({ plant }: CareHistoryCardProps) {
         <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
           <div className="flex-1">
-            <p className="text-gray-900">Last Watered</p>
+            <p className="text-gray-900">Last watered</p>
             <p className="text-sm text-gray-500">
               {plant.lastWatered ? getDaysSinceWatered(plant.lastWatered) : "-"}
             </p>
