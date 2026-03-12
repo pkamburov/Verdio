@@ -45,7 +45,7 @@ export default function SpeciesCombobox({ species, value, onChange }: Props) {
   return (
     <div ref={containerRef} className="relative">
       <input
-        className="w-full rounded-xl border p-2"
+        className="w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
         placeholder="Search species..."
         value={
           selected ? `${selected.commonName} (${selected.latinName})` : query
