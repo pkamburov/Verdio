@@ -62,7 +62,7 @@ export function SpeciesGuideCard({
             {(species?.sunExposureHours?.min != null ||
               species?.sunExposureHours?.max != null) && (
               <Badge variant="outline">
-                Sun:{" "}
+                Exposure:{" "}
                 {species.sunExposureHours.min != null &&
                 species.sunExposureHours.max != null
                   ? `${species.sunExposureHours.min}–${species.sunExposureHours.max}h`
