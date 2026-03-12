@@ -6,9 +6,9 @@ import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getPlant, deletePlant, markAsWatered } from "@/features/plants/api";
 import { getSpeciesById } from "@/features/species/api";
+
 import type { Plant } from "@/features/plants/types";
 import type { Species } from "@/features/species/types";
-import { getScoreCopy } from "@/features/plants/utils/format";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -36,9 +36,6 @@ export default function PlantDetailsPage() {
 
   const speciesId = useMemo(() => plant?.speciesId?.trim() ?? "", [plant]);
 
-  const scorePercent = 70;
-  const { label: scoreLabel, hint: scoreHint } = getScoreCopy(scorePercent);
-
   const fetchPlant = useCallback(async () => {
     if (!uid || !plantId) return;
 
@@ -64,8 +61,6 @@ export default function PlantDetailsPage() {
 
   async function handleMarkAsWatered() {
     if (!uid || !plantId) return;
-
-    const previousPlant = plant;
 
     try {
       setWatering(true);
@@ -162,7 +157,6 @@ export default function PlantDetailsPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      {/* Back Button */}
       <Link href="/plants">
         <Button variant="ghost" className="text-gray-600 hover:text-green-700">
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -170,7 +164,6 @@ export default function PlantDetailsPage() {
         </Button>
       </Link>
 
-      {/* Main Plant Card */}
       <PlantHeaderCard
         plant={plant}
         species={species}
@@ -178,13 +171,11 @@ export default function PlantDetailsPage() {
         onDelete={handleDelete}
       />
 
-      {/* Quick Actions */}
       <QuickActionsCard
         watering={watering}
         handleMarkAsWatered={handleMarkAsWatered}
       />
 
-      {/* Species Guide */}
       <SpeciesGuideCard plant={plant} species={species} speciesLoading />
 
       {/* Notes Section */}
@@ -201,7 +192,6 @@ export default function PlantDetailsPage() {
         </div>
       </Card>
 
-      {/* Care History */}
       <CareHistoryCard plant={plant} />
     </div>
   );
