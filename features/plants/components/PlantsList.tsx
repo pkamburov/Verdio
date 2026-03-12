@@ -7,7 +7,12 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Droplets, Sun, CompassIcon } from "lucide-react";
-import { slugToTitle } from "../utils/format";
+import {
+  formatPlantExposure,
+  formatPlantPosition,
+  slugToTitle,
+} from "../utils/format";
+import { getDaysSinceWatered } from "../utils/format";
 
 export default function PlantList({ uid }: { uid: string }) {
   const [plants, setPlants] = useState<Plant[]>([]);
@@ -109,15 +114,15 @@ export default function PlantList({ uid }: { uid: string }) {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-gray-700">
                   <Droplets className="w-5 h-5 text-blue-500" />
-                  {/* <span>Next watering: {new Date(plant.nextWatering).toLocaleDateString()}</span> */}
+                  <span>{getDaysSinceWatered(plant.lastWatered)}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-700">
                   <Sun className="w-5 h-5 text-amber-500" />
-                  <span>{plant.exposure}</span>
+                  <span>{formatPlantExposure(plant.exposure)}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-700">
                   <CompassIcon className="w-5 h-5 text-green-500" />
-                  <span>{plant.position}</span>
+                  <span>{formatPlantPosition(plant.position)}</span>
                 </div>
               </div>
             </div>
