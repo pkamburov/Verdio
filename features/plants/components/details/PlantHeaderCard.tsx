@@ -87,9 +87,9 @@ export function PlantHeaderCard({
               </div>
 
               <div>
-                <p className="font-medium text-gray-900">Watering Schedule</p>
+                <p className="font-medium text-gray-900">Last Watered</p>
                 <p className="text-sm text-gray-600">
-                  {species?.watering?.rule ?? "—"}
+                  {getDaysSinceWatered(plant.lastWatered) ?? "—"}
                 </p>
               </div>
             </div>
