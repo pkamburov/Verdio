@@ -21,7 +21,7 @@ export default function NewPlantPage() {
   const router = useRouter();
 
   const [name, setName] = useState("");
-  const [speciesId, setSpeciesId] = useState<string | null>(null);
+  const [speciesId, setSpeciesId] = useState<string>("");
   const [isIndoor, setIsIndoor] = useState(true);
   const [exposure, setExposure] = useState<Exposure | "">("");
   const [position, setPosition] = useState<Position | "">("");
@@ -68,7 +68,7 @@ export default function NewPlantPage() {
 
       const plantId = await createPlant(uid, {
         name,
-        speciesId: speciesId || undefined,
+        speciesId: speciesId,
         position: position || null,
         isIndoor,
         exposure: exposure || null,
