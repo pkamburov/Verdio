@@ -2,8 +2,9 @@ import type { Timestamp } from "firebase/firestore";
 import type { Plant } from "@/features/plants/types";
 import type { WeatherData } from "@/features/weather/types";
 import type { DashboardTip, DashboardTipPriority } from "./types";
+import { getSpeciesById } from "../species/api";
 
-export function getDaysSince(timestamp?: Timestamp | null): number | null {
+function getDaysSince(timestamp?: Timestamp | null): number | null {
   if (!timestamp) return null;
 
   const date = timestamp.toDate();
