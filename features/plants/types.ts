@@ -1,5 +1,4 @@
 import { Timestamp } from "firebase/firestore";
-import { Species } from "../species/types";
 
 export const POSITIONS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"] as const;
 export type Position = (typeof POSITIONS)[number];
@@ -8,7 +7,7 @@ export type Exposure = "low" | "medium" | "high";
 export type Plant = {
   id: string;
   name: string;
-  speciesId?: string;
+  speciesId: string;
   position?: Position | null;
   isIndoor: boolean;
   imageUrl: string | null;
@@ -21,7 +20,7 @@ export type Plant = {
 
 export type PlantCreateInput = {
   name: string;
-  speciesId?: string;
+  speciesId: string;
   position?: Position | null;
   isIndoor: boolean;
   exposure?: Exposure | "" | null;
