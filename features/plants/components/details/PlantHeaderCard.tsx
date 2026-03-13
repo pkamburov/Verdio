@@ -16,11 +16,18 @@ import {
 
 import { Droplets, Sun, CompassIcon, Calendar } from "lucide-react";
 
+type PlantScore = {
+  percent: number;
+  label: string;
+  hint: string;
+};
+
 type PlantHeaderCardProps = {
   plant: Plant;
   species: Species | null;
   deleting: boolean;
   onDelete: () => void;
+  score: PlantScore | null;
 };
 
 export function PlantHeaderCard({
@@ -28,6 +35,7 @@ export function PlantHeaderCard({
   species,
   deleting,
   onDelete,
+  score,
 }: PlantHeaderCardProps) {
   return (
     <Card className="overflow-hidden bg-white/60 backdrop-blur-sm border-green-100">
@@ -80,20 +88,22 @@ export function PlantHeaderCard({
 
           {/* Info rows */}
           <div className="space-y-4 pt-4">
-            {/* Watering */}
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
-                <Droplets className="w-5 h-5 text-blue-600" />
-              </div>
+            {score ? (
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-sm font-semibold text-emerald-700 shadow-sm">
+                    {score.percent}%
+                  </div>
 
-              <div>
-                <p className="font-medium text-gray-900">Last Watered</p>
-                <p className="text-sm text-gray-600">
-                  {getDaysSinceWatered(plant.lastWatered) ?? "—"}
-                </p>
-              </div>
-            </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Plant Score</p>
+                    <p className="text-sm text-gray-600">{score.label}</p>
+                  </div>
+                </div>
 
+                <p className="mt-3 text-sm text-gray-600">{score.hint}</p>
+              </div>
+            ) : null}
             {/* Sunlight */}
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
@@ -115,24 +125,37 @@ export function PlantHeaderCard({
               </div>
 
               <div>
-                <p className="font-medium text-gray-900">Position</p>
+                <p className="font-medium text-gray-900">Placement</p>
                 <p className="text-sm text-gray-600">
+                  {plant.isIndoor ? "Indoor" : "Outdoor"} /{" "}
                   {formatPlantPosition(plant.position)}
                 </p>
               </div>
             </div>
 
-            {/* Last watered */}
+            {/* Watering */}
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                <Droplets className="w-5 h-5 text-blue-600" />
+              </div>
+
+              <div>
+                <p className="font-medium text-gray-900">Last Watered</p>
+                <p className="text-sm text-gray-600">
+                  {getDaysSinceWatered(plant.lastWatered) ?? "—"}
+                </p>
+              </div>
+            </div>
+
+            {/* Reminders */}
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center shrink-0">
                 <Calendar className="w-5 h-5 text-purple-600" />
               </div>
 
               <div>
-                <p className="font-medium text-gray-900">Last Watered</p>
-                <p className="text-sm text-gray-600">
-                  {getDaysSinceWatered(plant.lastWatered)}
-                </p>
+                <p className="font-medium text-gray-900">Reminders</p>
+                <p className="text-sm text-gray-600">-</p>
               </div>
             </div>
           </div>
