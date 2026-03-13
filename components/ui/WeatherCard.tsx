@@ -1,4 +1,11 @@
-import { CloudSun, Droplets, Sun, Wind } from "lucide-react";
+import {
+  CloudRain,
+  CloudSun,
+  Droplets,
+  Snowflake,
+  Sun,
+  Wind,
+} from "lucide-react";
 import { Card } from "./Card";
 import { WeatherData } from "@/features/weather/types";
 import { getUVLevel, getWeatherLabel } from "@/features/weather/utils";
@@ -10,6 +17,28 @@ type WeatherDataProps = {
 
 const uvLevel = getUVLevel(weatherData.uvIndex);
 
+function getWeatherIcon(code: string) {
+  if (code === "Clear Sky") {
+    return <Sun className="w-12 h-12 text-yellow-600" />;
+  }
+
+  if (code === "Cloudy") {
+    return <CloudSun className="w-12 h-12 text-yellow-300" />;
+  }
+
+  if (code === "Rain") {
+    return <CloudRain className="w-12 h-12 text-blue-300" />;
+  }
+
+  if (code === "Snow") {
+    return <Snowflake className="w-12 h-12 text-gray-300" />;
+  }
+
+  if (code === "Unknown") {
+    return <CloudSun className="w-12 h-12 text-gray-300" />;
+  }
+}
+
 export function WeatherCard({ weatherData }: WeatherDataProps) {
   const code = getWeatherLabel(weatherData.current.weatherCode);
   return (
@@ -18,7 +47,8 @@ export function WeatherCard({ weatherData }: WeatherDataProps) {
         <div className="flex items-start justify-between">
           <div className="space-y-4">
             <div className="flex items-center gap-6">
-              <CloudSun className="w-12 h-12 text-blue-600" />
+              {/* <CloudSun className="w-12 h-12 text-yellow-600" /> */}
+              {getWeatherIcon(code)}
               <div className="grid pt-2">
                 <div className="flex justify-between gap-4">
                   <div>
@@ -27,6 +57,12 @@ export function WeatherCard({ weatherData }: WeatherDataProps) {
                       {weatherData.current.temperature}°C
                     </p>
                     <p className="text-gray-700">{code}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Min Temp</p>
+                    <p className="text-xl font-semibold text-gray-900">
+                      {weatherData.daily[0].tempMin}°C
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Max Temp</p>
@@ -68,15 +104,14 @@ export function WeatherCard({ weatherData }: WeatherDataProps) {
               </div>
             </div>
           </div>
-
-          <div className="hidden md:block">
-            <div className="bg-white/50 rounded-lg p-4 space-y-2">
-              <p className="text-sm font-medium text-gray-700">Garden Tips</p>
-              <p className="text-sm text-gray-600">
-                Perfect conditions for watering. UV levels are moderate - good
-                for most indoor plants near windows.
-              </p>
-            </div>
+        </div>
+        <div className="hidden md:block">
+          <div className="bg-white/50 rounded-lg p-4 space-y-2">
+            <p className="text-sm font-medium text-gray-700">Garden Tips</p>
+            <p className="text-sm text-gray-600">
+              Perfect conditions for watering. UV levels are moderate - good for
+              most indoor plants near windows.
+            </p>
           </div>
         </div>
       </Card>
