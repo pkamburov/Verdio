@@ -12,11 +12,12 @@ import type { Species } from "@/features/species/types";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { ArrowLeft, ClipboardList, Sun } from "lucide-react";
+import { ArrowLeft, ClipboardList } from "lucide-react";
 import { PlantHeaderCard } from "@/features/plants/components/details/PlantHeaderCard";
 import { QuickActionsCard } from "@/features/plants/components/details/QuickActionsCard";
 import { CareHistoryCard } from "@/features/plants/components/details/CareHistoryCard";
 import { SpeciesGuideCard } from "@/features/plants/components/details/SpeciesGuideCard";
+import { calculatePlantScore } from "@/features/plants/utils/calculatePlantScore";
 
 export default function PlantDetailsPage() {
   const { uid, loading } = useAuth();
@@ -35,6 +36,13 @@ export default function PlantDetailsPage() {
   const [watering, setWatering] = useState(false);
 
   const speciesId = useMemo(() => plant?.speciesId?.trim() ?? "", [plant]);
+  const scoreResult = useMemo(() => {
+    if (!plant) return null;
+    return calculatePlantScore({
+      plant,
+      species,
+    });
+  }, [plant, species]);
 
   const fetchPlant = useCallback(async () => {
     if (!uid || !plantId) return;
@@ -169,6 +177,15 @@ export default function PlantDetailsPage() {
         species={species}
         deleting={deleting}
         onDelete={handleDelete}
+        score={
+          scoreResult && scoreResult.maxPoints > 0
+            ? {
+                percent: scoreResult.percent,
+                label: scoreResult.label,
+                hint: scoreResult.hint,
+              }
+            : null
+        }
       />
 
       <QuickActionsCard
@@ -176,7 +193,11 @@ export default function PlantDetailsPage() {
         handleMarkAsWatered={handleMarkAsWatered}
       />
 
-      <SpeciesGuideCard plant={plant} species={species} speciesLoading />
+      <SpeciesGuideCard
+        plant={plant}
+        species={species}
+        speciesLoading={speciesLoading}
+      />
 
       {/* Notes Section */}
       <Card className="p-6 bg-white/60 backdrop-blur-sm border-green-100">
