@@ -122,7 +122,10 @@ export default function PlantList({ uid }: { uid: string }) {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-700">
                   <CompassIcon className="w-5 h-5 text-green-500" />
-                  <span>{formatPlantPosition(plant.position)}</span>
+                  <span>
+                    {plant.isIndoor ? "Indoor" : "Outdoor"} /{" "}
+                    {formatPlantPosition(plant.position)}
+                  </span>
                 </div>
               </div>
             </div>
