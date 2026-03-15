@@ -18,23 +18,23 @@ type WeatherDataProps = {
 const uvLevel = getUVLevel(weatherData.uvIndex);
 
 function getWeatherIcon(code: string) {
-  if (code === "Clear Sky") {
+  if ((code = "Clear Sky")) {
     return <Sun className="w-12 h-12 text-yellow-600" />;
   }
 
-  if (code === "Cloudy") {
+  if ((code = "Cloudy")) {
     return <CloudSun className="w-12 h-12 text-yellow-300" />;
   }
 
-  if (code === "Rain") {
+  if ((code = "Rain")) {
     return <CloudRain className="w-12 h-12 text-blue-300" />;
   }
 
-  if (code === "Snow") {
+  if ((code = "Snow")) {
     return <Snowflake className="w-12 h-12 text-gray-300" />;
   }
 
-  if (code === "Unknown") {
+  if ((code = "Unknown")) {
     return <CloudSun className="w-12 h-12 text-gray-300" />;
   }
 }
@@ -105,7 +105,7 @@ export function WeatherCard({ weatherData }: WeatherDataProps) {
             </div>
           </div>
         </div>
-        <div className="hidden md:block">
+        <div className="md:block">
           <div className="bg-white/50 rounded-lg p-4 space-y-2">
             <p className="text-sm font-medium text-gray-700">Garden Tips</p>
             <p className="text-sm text-gray-600">
