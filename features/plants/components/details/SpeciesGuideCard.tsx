@@ -1,16 +1,33 @@
 "use client";
 
 import { Card } from "@/components/ui/Card";
-import { Sprout } from "lucide-react";
+import {
+  BookOpen,
+  Sprout,
+  Info,
+  Sun,
+  Thermometer,
+  Droplets,
+  Bug,
+  Sparkles,
+  Calendar,
+  Scissors,
+  MapPin,
+  Compass,
+} from "lucide-react";
 import {
   formatEnDate,
   formatPlantExposure,
+  getDaysSinceWatered,
   slugToTitle,
 } from "../../utils/format";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
+
 import { Species } from "@/features/species/types";
 import { Plant } from "../../types";
 import { titleCaseWords } from "@/features/species/utils/format";
 import { Badge } from "@/components/ui/Badge";
+import { spec } from "node:test/reporters";
 
 type SpeciesGuideCardProps = {
   plant: Plant;
@@ -84,7 +101,7 @@ export function SpeciesGuideCard({
     <Card className="p-6 bg-white/60 backdrop-blur-sm border-green-100">
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center shrink-0">
-          <Sprout className="w-5 h-5 text-white" />
+          <BookOpen className="w-5 h-5 text-white" />
         </div>
 
         <div className="flex-1">
@@ -104,170 +121,186 @@ export function SpeciesGuideCard({
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            {species?.indoorOutdoor ? (
-              <Badge variant="outline">
-                {species.indoorOutdoor === "both"
-                  ? "Indoor / Outdoor"
-                  : species.indoorOutdoor === "indoor"
-                    ? "Indoor"
-                    : "Outdoor"}
-              </Badge>
-            ) : null}
-
-            <Badge variant="outline">Exposure: {formatSunHours(species)}</Badge>
-
-            <Badge variant="outline">
-              Temperature: {formatTemperatureRange(species)}
-            </Badge>
-          </div>
-
           {species?.description?.short ? (
-            <p className="mt-4 text-sm leading-6 text-neutral-700">
+            <p className="mt-4 text-m leading-6 text-neutral-700">
               {species.description.short}
             </p>
           ) : null}
         </div>
       </div>
 
-      <div className="mt-5 space-y-2">
-        <details className="rounded-xl border border-green-100 bg-white/40 p-4">
-          <summary className="cursor-pointer font-medium text-green-900">
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+          <TabsTrigger value="overview" className="text-sm lg:text-sm">
+            <Info className="w-4 h-4 mr-1" />
             Overview
-          </summary>
-          <div className="mt-3 text-sm text-neutral-700 space-y-2">
-            <p>{species?.description?.full ?? "—"}</p>
-
-            <p>
-              <span className="font-medium text-neutral-900">
-                Optimal positioning:{" "}
-              </span>
-              {species?.optimalPositioning?.length
-                ? species.optimalPositioning.join(", ")
-                : "—"}
-            </p>
-          </div>
-        </details>
-
-        <details className="rounded-xl border border-green-100 bg-white/40 p-4">
-          <summary className="cursor-pointer font-medium text-green-900">
+          </TabsTrigger>
+          <TabsTrigger value="light" className="text-sm lg:text-sm">
+            <Sun className="w-4 h-4 mr-1" />
             Light
-          </summary>
-          <div className="mt-3 text-sm text-neutral-700 space-y-2">
-            <p>
-              <span className="font-medium text-neutral-900">
-                Recommended sun hours:{" "}
-              </span>
-              {formatSunHours(species)}
-            </p>
+          </TabsTrigger>
+          <TabsTrigger value="temperature" className="text-sm lg:text-sm">
+            <Thermometer className="w-4 h-4 mr-1" />
+            Temperature
+          </TabsTrigger>
+          <TabsTrigger value="watering" className="text-sm lg:text-sm">
+            <Droplets className="w-4 h-4 mr-1" />
+            Watering
+          </TabsTrigger>
+          <TabsTrigger value="pests" className="text-sm lg:text-sm">
+            <Bug className="w-4 h-4 mr-1" />
+            Pests
+          </TabsTrigger>
+          <TabsTrigger value="seasonal" className="text-sm lg:text-sm">
+            <Sparkles className="w-4 h-4 mr-1" />
+            Seasonal
+          </TabsTrigger>
+        </TabsList>
 
-            <p>
-              <span className="font-medium text-neutral-900">
-                Your exposure:{" "}
-              </span>
-              {formatPlantExposure(plant.exposure)}
-            </p>
-
-            <p>
-              <span className="font-medium text-neutral-900">Notes: </span>
-              {species?.light?.notes ?? "—"}
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="mt-6 space-y-4">
+          <div className="bg-green-50 rounded-lg p-4 border border-green-100">
+            <h4 className="font-semibold text-green-900 mb-2">
+              About This Species
+            </h4>
+            <p className="text-gray-700 leading-relaxed">
+              {species?.description.full}
             </p>
           </div>
-        </details>
+          <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+            <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+              <Compass className="w-4 h-4" />
+              Optimal Placement
+            </h4>
+            <p className="text-gray-700 leading-relaxed">
+              {species?.optimalPositioning.join(", ")}
+            </p>
+          </div>
+        </TabsContent>
 
-        <details className="rounded-xl border border-green-100 bg-white/40 p-4">
-          <summary className="cursor-pointer font-medium text-green-900">
-            Temperature
-          </summary>
-          <div className="mt-3 text-sm text-neutral-700 space-y-2">
-            <p>
-              <span className="font-medium text-neutral-900">
-                Recommended range:{" "}
-              </span>
+        {/* Light Tab */}
+        <TabsContent value="light" className="mt-6 space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="bg-amber-50 rounded-lg p-4 border border-amber-100">
+              <h4 className="font-semibold text-amber-900 mb-2">
+                Recommended Exposure
+              </h4>
+              <p className="text-gray-700">
+                {species?.light.sunExposureHours.min}-{" "}
+                {species?.light.sunExposureHours.max} hours
+              </p>
+            </div>
+            <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-100">
+              <h4 className="font-semibold text-yellow-900 mb-2">
+                Current Exposure
+              </h4>
+              <p className="text-gray-700">
+                {formatPlantExposure(plant.exposure)}
+              </p>
+            </div>
+          </div>
+          <div className="bg-orange-50 rounded-lg p-4 border border-orange-100">
+            <h4 className="font-semibold text-orange-900 mb-2">Light Notes</h4>
+            <p className="text-gray-700 leading-relaxed">
+              {species?.light.notes}
+            </p>
+          </div>
+        </TabsContent>
+
+        {/* Temperature Tab */}
+        <TabsContent value="temperature" className="mt-6 space-y-4">
+          <div className="bg-red-50 rounded-lg p-4 border border-red-100">
+            <h4 className="font-semibold text-red-900 mb-2 flex items-center gap-2">
+              <Thermometer className="w-4 h-4" />
+              Recommended Range
+            </h4>
+            <p className="text-2xl font-semibold text-gray-900 mb-2">
               {formatTemperatureRange(species)}
             </p>
-
-            <p>
-              <span className="font-medium text-neutral-900">Notes: </span>
-              {species?.temperature?.notes ?? "—"}
+            <p className="text-gray-700 leading-relaxed">
+              {species?.temperature.notes}
             </p>
           </div>
-        </details>
+        </TabsContent>
 
-        <details className="rounded-xl border border-green-100 bg-white/40 p-4">
-          <summary className="cursor-pointer font-medium text-green-900">
-            Watering
-          </summary>
-          <div className="mt-3 text-sm text-neutral-700 space-y-2">
-            <p>
-              <span className="font-medium text-neutral-900">Rule: </span>
-              {species?.watering?.rule ?? "—"}
+        {/* Watering Tab */}
+        <TabsContent value="watering" className="mt-6 space-y-4">
+          <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+            <h4 className="font-semibold text-blue-900 mb-2">Watering Rule</h4>
+            <p className="text-lg text-gray-900 mb-2">
+              {species?.watering.rule}
             </p>
-
-            <p>
-              <span className="font-medium text-neutral-900">Notes: </span>
-              {species?.watering?.notes ?? "—"}
-            </p>
-
-            <p>
-              <span className="font-medium text-neutral-900">
-                Last watered:{" "}
-              </span>
-              {formatEnDate(plant.lastWatered)}
+            <p className="text-gray-700 leading-relaxed">
+              {species?.watering.notes}
             </p>
           </div>
-        </details>
-
-        <details className="rounded-xl border border-green-100 bg-white/40 p-4">
-          <summary className="cursor-pointer font-medium text-green-900">
-            Common pests
-          </summary>
-          <div className="mt-3 text-sm text-neutral-700">
-            {species?.commonPests?.length ? (
-              <ul className="list-disc pl-5 space-y-1">
-                {species.commonPests.map((pestId) => (
-                  <li key={pestId}>
-                    {titleCaseWords(pestId.replaceAll("_", " "))}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              "—"
-            )}
+          <div className="bg-cyan-50 rounded-lg p-4 border border-cyan-100">
+            <h4 className="font-semibold text-cyan-900 mb-2 flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Last Watered
+            </h4>
+            <p className="text-gray-700">
+              {getDaysSinceWatered(plant.lastWatered)}
+            </p>
           </div>
-        </details>
+        </TabsContent>
 
-        <details className="rounded-xl border border-green-100 bg-white/40 p-4">
-          <summary className="cursor-pointer font-medium text-green-900">
-            Seasonal care
-          </summary>
-          <div className="mt-3 text-sm text-neutral-700 space-y-4">
-            <div>
-              <p className="font-medium text-neutral-900">Pruning</p>
-              <div className="mt-1">
-                {renderSeasonList(species?.pruningSeasons)}
-              </div>
-              <p className="mt-2">{species?.pruningNotes ?? "—"}</p>
-            </div>
-
-            <div>
-              <p className="font-medium text-neutral-900">Repotting</p>
-              <div className="mt-1">
-                {renderSeasonList(species?.repottingSeasons)}
-              </div>
-              <p className="mt-2">{species?.repottingNotes ?? "—"}</p>
-            </div>
-
-            <div>
-              <p className="font-medium text-neutral-900">Fertilizing</p>
-              <div className="mt-1">
-                {renderSeasonList(species?.fertilizingSeasons)}
-              </div>
-              <p className="mt-2">{species?.fertilizingNotes ?? "—"}</p>
+        {/* Pests Tab */}
+        <TabsContent value="pests" className="mt-6">
+          <div className="bg-rose-50 rounded-lg p-4 border border-rose-100">
+            <h4 className="font-semibold text-rose-900 mb-3 flex items-center gap-2">
+              <Bug className="w-4 h-4" />
+              Common Pests to Watch For
+            </h4>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {species?.commonPests
+                ? species?.commonPests.map((pest, index) => (
+                    <div
+                      key={index}
+                      className="bg-white rounded-lg p-3 border border-rose-200 flex items-center gap-2"
+                    >
+                      <div className="w-2 h-2 bg-rose-500 rounded-full"></div>
+                      <span className="text-gray-700">
+                        {titleCaseWords(pest)}
+                      </span>
+                    </div>
+                  ))
+                : ""}
             </div>
           </div>
-        </details>
-      </div>
+        </TabsContent>
+
+        {/* Seasonal Care Tab */}
+        <TabsContent value="seasonal" className="mt-6 space-y-4">
+          <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
+            <h4 className="font-semibold text-purple-900 mb-2 flex items-center gap-2">
+              <Scissors className="w-4 h-4" />
+              Pruning
+            </h4>
+            <p className="text-gray-700 leading-relaxed">
+              {renderSeasonList(species?.pruningSeasons)}
+            </p>
+          </div>
+          <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-100">
+            <h4 className="font-semibold text-indigo-900 mb-2 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Repotting
+            </h4>
+            <p className="text-gray-700 leading-relaxed">
+              {renderSeasonList(species?.repottingSeasons)}
+            </p>
+          </div>
+          <div className="bg-teal-50 rounded-lg p-4 border border-teal-100">
+            <h4 className="font-semibold text-teal-900 mb-2 flex items-center gap-2">
+              <Droplets className="w-4 h-4" />
+              Fertilizing
+            </h4>
+            <p className="text-gray-700 leading-relaxed">
+              {renderSeasonList(species?.fertilizingSeasons)}
+            </p>
+          </div>
+        </TabsContent>
+      </Tabs>
     </Card>
   );
 }
