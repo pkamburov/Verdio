@@ -1,5 +1,5 @@
 import { Position } from "../plants/types";
-import { SeasonKey } from "../shared/types/Season";
+import { SeasonKey } from "../shared/types/season";
 
 export type Species = {
   id: string;
