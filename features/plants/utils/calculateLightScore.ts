@@ -6,7 +6,7 @@ export function getExposureBucketFromHours(min?: number, max?: number) {
   const avg = (safeMin + safeMax) / 2;
 
   if (avg < 3) return "low";
-  if (avg < 6) return "medium";
+  if (avg < 7) return "medium";
   return "high";
 }
 
