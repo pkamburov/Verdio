@@ -33,8 +33,8 @@ export function formatPlantPosition(position?: string | null) {
 
 const EXPOSURE_LABELS: Record<string, string> = {
   low: "Low: 2–4 hours",
-  medium: "Medium: 4–6 hours",
-  high: "High: 6–8 hours",
+  medium: "Medium: 4–7 hours",
+  high: "High: 7+ hours",
 };
 
 export function formatPlantExposure(exposure?: string | null) {
