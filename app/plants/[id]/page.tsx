@@ -11,13 +11,13 @@ import type { Plant } from "@/features/plants/types";
 import type { Species } from "@/features/species/types";
 
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { ArrowLeft, ClipboardList } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { PlantHeaderCard } from "@/features/plants/components/details/PlantHeaderCard";
 import { QuickActionsCard } from "@/features/plants/components/details/QuickActionsCard";
 import { CareHistoryCard } from "@/features/plants/components/details/CareHistoryCard";
 import { SpeciesGuideCard } from "@/features/plants/components/details/SpeciesGuideCard";
 import { calculatePlantScore } from "@/features/plants/utils/calculatePlantScore";
+import { NotesCard } from "@/features/plants/components/details/NotesCard";
 
 export default function PlantDetailsPage() {
   const { uid, loading } = useAuth();
@@ -199,19 +199,7 @@ export default function PlantDetailsPage() {
         speciesLoading={speciesLoading}
       />
 
-      {/* Notes Section */}
-      <Card className="p-6 bg-white/60 backdrop-blur-sm border-green-100">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center shrink-0">
-            <ClipboardList className="w-5 h-5 text-teal-600" />
-          </div>
-          <div className="flex-1 space-y-4">
-            <h2 className="text-xl font-semibold text-green-900 mb-2">
-              Care Notes
-            </h2>
-          </div>
-        </div>
-      </Card>
+      {!loading && uid ? <NotesCard userId={uid} plantId={plant.id} /> : null}
 
       <CareHistoryCard plant={plant} />
     </div>

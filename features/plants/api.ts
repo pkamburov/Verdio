@@ -11,7 +11,13 @@ import {
   serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
-import type { Plant, PlantCreateInput, UpdatePlantInput } from "./types";
+import type {
+  Note,
+  NoteCreateInput,
+  Plant,
+  PlantCreateInput,
+  UpdatePlantInput,
+} from "./types";
 import { Timestamp } from "firebase/firestore";
 
 function plantsCol(uid: string) {
@@ -20,6 +26,10 @@ function plantsCol(uid: string) {
 
 function plantDoc(uid: string, plantId: string) {
   return doc(db, "users", uid, "plants", plantId);
+}
+
+function notesCol(uid: string, plantId: string) {
+  return collection(db, "users", uid, "plants", plantId, "notes");
 }
 
 export async function listPlants(uid: string): Promise<Plant[]> {
@@ -100,4 +110,60 @@ export async function markAsWatered(uid: string, plantId: string) {
   return updatePlant(uid, plantId, {
     lastWatered: Timestamp.now(),
   });
+}
+
+export async function addNote(
+  uid: string,
+  plantId: string,
+  input: NoteCreateInput,
+): Promise<Note> {
+  const notesRef = collection(db, "users", uid, "plants", plantId, "notes");
+
+  const docRef = await addDoc(notesRef, {
+    text: input.text,
+    createdAt: serverTimestamp(),
+  });
+
+  return {
+    id: docRef.id,
+    text: input.text,
+    createdAt: Timestamp.now(),
+  };
+}
+
+export async function getNotes(uid: string, plantId: string) {
+  const q = query(notesCol(uid, plantId), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+
+  return snap.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      text: data.text ?? "",
+      createdAt: data.createdAt ?? null,
+    };
+  });
+}
+
+export async function updateNote(
+  userId: string,
+  plantId: string,
+  noteId: string,
+  text: string,
+) {
+  const ref = doc(db, "users", userId, "plants", plantId, "notes", noteId);
+
+  await updateDoc(ref, {
+    text,
+  });
+}
+
+export async function deleteNote(
+  userId: string,
+  plantId: string,
+  noteId: string,
+) {
+  const ref = doc(db, "users", userId, "plants", plantId, "notes", noteId);
+
+  await deleteDoc(ref);
 }

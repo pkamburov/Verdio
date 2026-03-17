@@ -16,6 +16,7 @@ export type Plant = {
   createdAt?: Timestamp | null;
   updatedAt?: Timestamp | null;
   lastWatered?: Timestamp | null;
+  notes?: Notes[];
 };
 
 export type PlantCreateInput = {
@@ -27,6 +28,11 @@ export type PlantCreateInput = {
   imageUrl?: string | null;
   imagePath?: string | null;
   lastWatered?: Timestamp | null;
+};
+
+export type Notes = {
+  text: string;
+  createdAt: Timestamp | null;
 };
 
 export type UpdatePlantInput = Partial<PlantCreateInput>;
