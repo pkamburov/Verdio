@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { listPlants } from "../api";
 import type { Plant } from "../types";
 import Link from "next/link";
@@ -13,6 +13,7 @@ import {
   slugToTitle,
 } from "../utils/format";
 import { getDaysSinceWatered } from "../utils/format";
+import { calculatePlantScore } from "../utils/calculatePlantScore";
 
 export default function PlantList({ uid }: { uid: string }) {
   const [plants, setPlants] = useState<Plant[]>([]);
