@@ -12,11 +12,9 @@ import {
   Sparkles,
   Calendar,
   Scissors,
-  MapPin,
   Compass,
 } from "lucide-react";
 import {
-  formatEnDate,
   formatPlantExposure,
   getDaysSinceWatered,
   slugToTitle,
@@ -26,8 +24,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { Species } from "@/features/species/types";
 import { Plant } from "../../types";
 import { titleCaseWords } from "@/features/species/utils/format";
-import { Badge } from "@/components/ui/Badge";
-import { spec } from "node:test/reporters";
 
 type SpeciesGuideCardProps = {
   plant: Plant;
@@ -98,7 +94,7 @@ export function SpeciesGuideCard({
   }
 
   return (
-    <Card className="p-6 bg-white/60 backdrop-blur-sm border-green-100">
+    <Card className="p-6 bg-white/60 backdrop-blur-sm border-green-100 h-auto">
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center shrink-0">
           <BookOpen className="w-5 h-5 text-white" />
@@ -130,7 +126,7 @@ export function SpeciesGuideCard({
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+        <TabsList className="grid w-full h-full grid-cols-3 lg:grid-cols-6 xs:grid-cols-1">
           <TabsTrigger value="overview" className="text-sm lg:text-sm">
             <Info className="w-4 h-4 mr-1" />
             Overview
@@ -163,18 +159,18 @@ export function SpeciesGuideCard({
             <h4 className="font-semibold text-green-900 mb-2">
               About This Species
             </h4>
-            <p className="text-gray-700 leading-relaxed">
+            <div className="text-gray-700 leading-relaxed">
               {species?.description.full}
-            </p>
+            </div>
           </div>
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
             <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
               <Compass className="w-4 h-4" />
               Optimal Placement
             </h4>
-            <p className="text-gray-700 leading-relaxed">
+            <div className="text-gray-700 leading-relaxed">
               {species?.optimalPositioning.join(", ")}
-            </p>
+            </div>
           </div>
         </TabsContent>
 
@@ -185,10 +181,10 @@ export function SpeciesGuideCard({
               <h4 className="font-semibold text-amber-900 mb-2">
                 Recommended Exposure
               </h4>
-              <p className="text-gray-700">
-                {species?.light.sunExposureHours.min}-{" "}
+              <div className="text-gray-700">
+                {species?.light.sunExposureHours.min}-
                 {species?.light.sunExposureHours.max} hours
-              </p>
+              </div>
             </div>
             <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-100">
               <h4 className="font-semibold text-yellow-900 mb-2">
