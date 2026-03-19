@@ -1,13 +1,24 @@
-import type { Timestamp } from "firebase/firestore";
-import type { Plant } from "@/features/plants/types";
-import type { Species } from "@/features/species/types";
-import type { Position } from "@/features/plants/types";
+import type {
+  Plant,
+  CareHistory,
+  Position,
+  Exposure,
+} from "@/features/plants/types";
+import type { Species, NumericRange } from "@/features/species/types";
+import { calculateWateringScore } from "./calculateWateringScore";
+import { calculateRepottingScore } from "./calculateRepottingScore";
 
 export type ScoreStatus = "good" | "warning" | "bad" | "unknown";
-export type WateringFrequencyHint = "low" | "moderate" | "high";
+
+export type ScoreBreakdownKey =
+  | "indoorOutdoor"
+  | "light"
+  | "temperature"
+  | "watering"
+  | "repotting";
 
 export type ScoreBreakdownItem = {
-  key: "position" | "light" | "temperature" | "watering";
+  key: ScoreBreakdownKey;
   label: string;
   points: number;
   maxPoints: number;
@@ -28,26 +39,15 @@ type CalculatePlantScoreOptions = {
   plant: Plant;
   species: Species | null;
   currentTemperature?: number | null;
-  now?: Date;
 };
 
 const SCORE_WEIGHTS = {
-  position: 30,
-  light: 25,
-  temperature: 20,
-  watering: 25,
+  indoorOutdoor: 10,
+  light: 30,
+  temperature: 30,
+  watering: 20,
+  repotting: 10,
 } as const;
-
-function daysBetween(from: Timestamp | Date, to: Date) {
-  const fromDate = from instanceof Date ? from : from.toDate();
-
-  if (Number.isNaN(fromDate.getTime())) {
-    return null;
-  }
-
-  const diffMs = to.getTime() - fromDate.getTime();
-  return diffMs / (1000 * 60 * 60 * 24);
-}
 
 function getScoreLabel(percent: number) {
   if (percent >= 85) return "Excellent";
@@ -57,17 +57,8 @@ function getScoreLabel(percent: number) {
   return "Critical";
 }
 
-function getScoreHint(percent: number) {
-  if (percent >= 85) return "Conditions look very good for this plant.";
-  if (percent >= 70) return "Mostly good, with a few things to watch.";
-  if (percent >= 50)
-    return "Some conditions are fine, but there are a few mismatches.";
-  if (percent >= 30) return "Several conditions may be stressing the plant.";
-  return "This plant may be under significant stress.";
-}
-
 function createUnknownItem(
-  key: ScoreBreakdownItem["key"],
+  key: ScoreBreakdownKey,
   label: string,
   reason: string,
 ): ScoreBreakdownItem {
@@ -81,10 +72,37 @@ function createUnknownItem(
   };
 }
 
+function getStrongestHint(
+  breakdown: ScoreBreakdownItem[],
+  fallbackPercent: number,
+) {
+  const scoredItems = breakdown.filter((item) => item.maxPoints > 0);
+
+  if (!scoredItems.length) {
+    if (fallbackPercent >= 85)
+      return "Conditions look very good for this plant.";
+    if (fallbackPercent >= 70)
+      return "Mostly good, with a few things to watch.";
+    if (fallbackPercent >= 50)
+      return "Some conditions are fine, but there are a few mismatches.";
+    if (fallbackPercent >= 30)
+      return "Several conditions may be stressing the plant.";
+    return "This plant may be under significant stress.";
+  }
+
+  const weakestItem = [...scoredItems].sort((a, b) => {
+    const aRatio = a.maxPoints > 0 ? a.points / a.maxPoints : 1;
+    const bRatio = b.maxPoints > 0 ? b.points / b.maxPoints : 1;
+    return aRatio - bRatio;
+  })[0];
+
+  return weakestItem?.reason ?? "Some conditions may need attention.";
+}
+
 function getExposureBucketFromSunHours(
   min?: number,
   max?: number,
-): "low" | "medium" | "high" | null {
+): Exposure | null {
   if (min == null && max == null) return null;
 
   const safeMin = min ?? 0;
@@ -96,39 +114,34 @@ function getExposureBucketFromSunHours(
   return "high";
 }
 
-function calculatePositionScore(
-  plantPosition: Position | null | undefined,
-  optimalPositions: Position[] | undefined,
+function calculateIndoorOutdoorScore(
+  isIndoor: boolean,
+  indoorOutdoor: Species["indoorOutdoor"] | undefined,
 ): ScoreBreakdownItem {
-  const maxPoints = SCORE_WEIGHTS.position;
+  const maxPoints = SCORE_WEIGHTS.indoorOutdoor;
 
-  if (!plantPosition) {
+  if (!indoorOutdoor) {
     return createUnknownItem(
-      "position",
-      "Position",
-      "Plant position is not set.",
+      "indoorOutdoor",
+      "Placement",
+      "Species indoor/outdoor preference is missing.",
     );
   }
 
-  if (!optimalPositions?.length) {
-    return createUnknownItem(
-      "position",
-      "Position",
-      "Species positioning data is missing.",
-    );
-  }
-
-  const isMatch = optimalPositions.includes(plantPosition);
+  const matches =
+    indoorOutdoor === "both" ||
+    (indoorOutdoor === "indoor" && isIndoor) ||
+    (indoorOutdoor === "outdoor" && !isIndoor);
 
   return {
-    key: "position",
-    label: "Position",
-    points: isMatch ? maxPoints : 0,
+    key: "indoorOutdoor",
+    label: "Placement",
+    points: matches ? maxPoints : 0,
     maxPoints,
-    status: isMatch ? "good" : "bad",
-    reason: isMatch
-      ? `Plant position (${plantPosition}) matches the recommended placement.`
-      : `Plant position (${plantPosition}) does not match the recommended placement: ${optimalPositions.join(", ")}.`,
+    status: matches ? "good" : "bad",
+    reason: matches
+      ? `This ${isIndoor ? "indoor" : "outdoor"} placement matches the species needs.`
+      : `This plant is marked as ${isIndoor ? "indoor" : "outdoor"}, but the species is best suited for ${indoorOutdoor}.`,
   };
 }
 
@@ -157,9 +170,7 @@ function calculateLightScore(
     );
   }
 
-  const isExactMatch = plantExposure === targetExposure;
-
-  if (isExactMatch) {
+  if (plantExposure === targetExposure) {
     return {
       key: "light",
       label: "Light",
@@ -177,84 +188,6 @@ function calculateLightScore(
     maxPoints,
     status: "warning",
     reason: `Plant exposure is ${plantExposure}, but the species prefers ${targetExposure}.`,
-  };
-}
-
-function getRecommendedWateringWindowDays(
-  frequencyHint?: WateringFrequencyHint,
-) {
-  switch (frequencyHint) {
-    case "low":
-      return { min: 5, max: 10 };
-    case "moderate":
-      return { min: 3, max: 6 };
-    case "high":
-      return { min: 1, max: 3 };
-    default:
-      return { min: 3, max: 7 };
-  }
-}
-
-function calculateWateringScore(
-  lastWatered: Plant["lastWatered"],
-  frequencyHint: WateringFrequencyHint | undefined,
-  now: Date,
-): ScoreBreakdownItem {
-  const maxPoints = SCORE_WEIGHTS.watering;
-
-  if (!lastWatered || typeof lastWatered.toDate !== "function") {
-    return createUnknownItem(
-      "watering",
-      "Watering",
-      "No valid watering history is available.",
-    );
-  }
-
-  const daysSinceWatered = daysBetween(lastWatered, now);
-
-  if (daysSinceWatered == null) {
-    return createUnknownItem(
-      "watering",
-      "Watering",
-      "Last watered date is invalid.",
-    );
-  }
-
-  const window = getRecommendedWateringWindowDays(frequencyHint);
-
-  if (daysSinceWatered >= window.min && daysSinceWatered <= window.max) {
-    return {
-      key: "watering",
-      label: "Watering",
-      points: maxPoints,
-      maxPoints,
-      status: "good",
-      reason: "Watering appears to be within the expected range.",
-    };
-  }
-
-  if (daysSinceWatered < window.min) {
-    return {
-      key: "watering",
-      label: "Watering",
-      points: Math.round(maxPoints * 0.6),
-      maxPoints,
-      status: "warning",
-      reason: "The plant may have been watered too recently.",
-    };
-  }
-
-  const overdueDays = daysSinceWatered - window.max;
-  const penalty = Math.min(maxPoints, Math.ceil(overdueDays * 5));
-  const points = Math.max(0, maxPoints - penalty);
-
-  return {
-    key: "watering",
-    label: "Watering",
-    points,
-    maxPoints,
-    status: points > maxPoints * 0.5 ? "warning" : "bad",
-    reason: "The plant may be overdue for watering.",
   };
 }
 
@@ -298,7 +231,7 @@ function calculateTemperatureScore(
       : currentTemperature - maxTemp;
 
   const penalty = Math.min(maxPoints, distance * 4);
-  const points = Math.max(0, maxPoints - penalty);
+  const points = Math.max(0, Math.round(maxPoints - penalty));
 
   return {
     key: "temperature",
@@ -317,7 +250,6 @@ export function calculatePlantScore({
   plant,
   species,
   currentTemperature = null,
-  now = new Date(),
 }: CalculatePlantScoreOptions): PlantScoreResult {
   if (!species) {
     return {
@@ -327,7 +259,11 @@ export function calculatePlantScore({
       totalPoints: 0,
       maxPoints: 0,
       breakdown: [
-        createUnknownItem("position", "Position", "Species data is missing."),
+        createUnknownItem(
+          "indoorOutdoor",
+          "Placement",
+          "Species data is missing.",
+        ),
         createUnknownItem("light", "Light", "Species data is missing."),
         createUnknownItem(
           "temperature",
@@ -335,12 +271,25 @@ export function calculatePlantScore({
           "Species data is missing.",
         ),
         createUnknownItem("watering", "Watering", "Species data is missing."),
+        createUnknownItem("repotting", "Repotting", "Species data is missing."),
       ],
     };
   }
 
+  const wateringResult = calculateWateringScore(
+    plant.careHistory,
+    species.watering?.intervalDays,
+    SCORE_WEIGHTS.watering,
+  );
+
+  const repottingResult = calculateRepottingScore(
+    plant.careHistory,
+    species.repottingIntervalMonths,
+    SCORE_WEIGHTS.repotting,
+  );
+
   const breakdown: ScoreBreakdownItem[] = [
-    calculatePositionScore(plant.position, species.optimalPositioning),
+    calculateIndoorOutdoorScore(plant.isIndoor, species.indoorOutdoor),
     calculateLightScore(
       plant.exposure,
       species.light?.sunExposureHours?.min,
@@ -351,11 +300,22 @@ export function calculatePlantScore({
       species.temperature?.min,
       species.temperature?.max,
     ),
-    calculateWateringScore(
-      plant.lastWatered,
-      species.watering?.frequencyHint,
-      now,
-    ),
+    {
+      key: "watering",
+      label: "Watering",
+      points: wateringResult.points,
+      maxPoints: wateringResult.maxPoints,
+      status: wateringResult.status,
+      reason: wateringResult.reason,
+    },
+    {
+      key: "repotting",
+      label: "Repotting",
+      points: repottingResult.points,
+      maxPoints: repottingResult.maxPoints,
+      status: repottingResult.status,
+      reason: repottingResult.reason,
+    },
   ];
 
   const totalPoints = breakdown.reduce((sum, item) => sum + item.points, 0);
@@ -366,7 +326,7 @@ export function calculatePlantScore({
   return {
     percent,
     label: getScoreLabel(percent),
-    hint: getScoreHint(percent),
+    hint: getStrongestHint(breakdown, percent),
     totalPoints,
     maxPoints,
     breakdown,

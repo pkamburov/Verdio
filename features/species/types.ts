@@ -1,6 +1,11 @@
 import { Position } from "../plants/types";
 import { SeasonKey } from "../shared/types/season";
 
+export type NumericRange = {
+  min: number;
+  max: number;
+};
+
 export type Species = {
   id: string;
   commonName: string;
@@ -14,10 +19,7 @@ export type Species = {
   };
 
   light: {
-    sunExposureHours: {
-      min: number;
-      max: number;
-    };
+    sunExposureHours: NumericRange;
     notes?: string;
   };
 
@@ -31,6 +33,7 @@ export type Species = {
     rule: string;
     notes?: string;
     frequencyHint?: "low" | "moderate" | "high";
+    intervalDays?: NumericRange;
   };
 
   pruningSeasons?: SeasonKey[];
@@ -40,6 +43,9 @@ export type Species = {
   pruningNotes?: string;
   repottingNotes?: string;
   fertilizingNotes?: string;
+
+  repottingIntervalMonths?: NumericRange;
+  fertilizingIntervalDays?: NumericRange;
 
   commonPests?: string[];
 };
