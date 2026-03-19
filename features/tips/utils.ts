@@ -1,8 +1,15 @@
+import type { Timestamp } from "firebase/firestore";
 import type { Plant } from "@/features/plants/types";
+import type { Species } from "../species/types";
 import type { WeatherData } from "@/features/weather/types";
 import type { DashboardTip, DashboardTipPriority } from "./types";
 import { getSpeciesById } from "../species/api";
 import { getDaysSinceWatered } from "../plants/utils/careHistory";
+
+type PlantWithSpecies = {
+  plant: Plant;
+  species: Species | null;
+};
 
 function priorityRank(priority: DashboardTipPriority) {
   switch (priority) {
@@ -15,6 +22,60 @@ function priorityRank(priority: DashboardTipPriority) {
     default:
       return 3;
   }
+}
+
+export function getPriorityColor(priority: string): string {
+  switch (priority) {
+    case "low":
+      return "bg-gray-100 text-gray-700 border-gray-200";
+
+    case "medium":
+      return "bg-amber-100 text-amber-700 border-amber-200";
+
+    case "high":
+      return "bg-red-100 text-red-700 border-red-200 ring-1 ring-red-200";
+
+    case "urgent":
+      return "bg-red-200 text-red-800 border-red-300";
+
+    default:
+      return "bg-gray-100 text-gray-600 border-gray-200";
+  }
+}
+
+export function getLastWateredDate(watering?: Timestamp[]): Date | null {
+  if (!watering || watering.length === 0) return null;
+
+  const last = watering[watering.length - 1];
+
+  return last?.toDate() ?? null;
+}
+
+export function countPlantsNeedingWater(
+  items: PlantWithSpecies[],
+  now: Date = new Date(),
+): Plant[] {
+  let result: Plant[] = [];
+
+  for (const { plant, species } of items) {
+    const maxDays = species?.watering?.intervalDays?.max;
+    if (!maxDays) continue;
+
+    const lastWatered = getLastWateredDate(plant.careHistory?.watering);
+
+    if (!lastWatered) {
+      result.push(plant);
+      continue;
+    }
+
+    const diffMs = now.getTime() - lastWatered.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays >= maxDays) {
+      result.push(plant);
+    }
+  }
+  return result;
 }
 
 export async function generateDashboardTips(

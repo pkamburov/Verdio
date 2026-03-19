@@ -8,19 +8,50 @@ import { WeatherCard } from "@/components/ui/WeatherCard";
 import { WeatherData } from "@/features/weather/types";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useEffect, useMemo, useState } from "react";
-import { generateDashboardTips } from "@/features/tips/utils";
+import { generateDashboardTips, getPriorityColor } from "@/features/tips/utils";
 import { DashboardTip } from "@/features/tips/types";
 import { Plant } from "@/features/plants/types";
+import { Species } from "@/features/species/types";
+import { useSpecies } from "@/features/species/useSpecies";
+import { countPlantsNeedingWater } from "@/features/tips/utils";
 import { getPlants } from "@/features/plants/api";
+import { countHealthyPlants } from "@/features/plants/utils/countHealthyPlants";
 
 export default function DashboardPage() {
   const { uid } = useAuth();
+  const { species, loading } = useSpecies();
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [weatherError, setWeatherError] = useState<string | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [plants, setPlants] = useState<Plant[]>([]);
   const [tips, setTips] = useState<DashboardTip[]>([]);
+
   const coords = useMemo(() => ({ latitude: 42.697, longitude: 23.3219 }), []);
+  const speciesMap = useMemo<Record<string, Species>>(
+    () => Object.fromEntries(species.map((s) => [s.id, s])),
+    [species],
+  );
+  const healthyPlantsCount = useMemo(() => {
+    if (!plants.length || !species.length) return 0;
+
+    return countHealthyPlants(
+      plants.map((plant) => ({
+        plant,
+        species: speciesMap[plant.speciesId] ?? null,
+      })),
+    );
+  }, [plants, species, speciesMap]);
+
+  const needWaterCount = useMemo(() => {
+    if (!plants.length || !species.length) return [];
+
+    return countPlantsNeedingWater(
+      plants.map((plant) => ({
+        plant,
+        species: speciesMap[plant.speciesId] ?? null,
+      })),
+    );
+  }, [plants, species, speciesMap]);
 
   useEffect(() => {
     if (!uid) return;
@@ -56,6 +87,7 @@ export default function DashboardPage() {
       const generated = await generateDashboardTips(plants, weatherData);
       setTips(generated);
     }
+
     run();
   }, [plants, weatherData]);
 
@@ -95,15 +127,21 @@ export default function DashboardPage() {
           </Card>
           <Card className="p-4 bg-white/60 backdrop-blur-sm border-green-100">
             <p className="text-sm text-gray-600">Need Water</p>
-            <p className="text-3xl font-semibold text-blue-600 mt-1">2</p>
+            <p className="text-3xl font-semibold text-blue-600 mt-1">
+              {needWaterCount.length}
+            </p>
           </Card>
           <Card className="p-4 bg-white/60 backdrop-blur-sm border-green-100">
-            <p className="text-sm text-gray-600">Excellent Health</p>
-            <p className="text-3xl font-semibold text-emerald-600 mt-1">4</p>
+            <p className="text-sm text-gray-600">Plants In Good Health</p>
+            <p className="text-3xl font-semibold text-emerald-600 mt-1">
+              {healthyPlantsCount}
+            </p>
           </Card>
           <Card className="p-4 bg-white/60 backdrop-blur-sm border-green-100">
             <p className="text-sm text-gray-600">Pending Tasks</p>
-            <p className="text-3xl font-semibold text-amber-600 mt-1">3</p>
+            <p className="text-3xl font-semibold text-amber-600 mt-1">
+              {tips.length}
+            </p>
           </Card>
         </div>
       </section>
@@ -153,7 +191,7 @@ export default function DashboardPage() {
 
                     <Badge
                       variant="outline"
-                      // className={getPriorityColor(notification.priority)}
+                      className={getPriorityColor(notification.priority)}
                     >
                       {notification.priority}
                     </Badge>
