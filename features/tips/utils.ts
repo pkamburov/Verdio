@@ -1,18 +1,8 @@
-import type { Timestamp } from "firebase/firestore";
 import type { Plant } from "@/features/plants/types";
 import type { WeatherData } from "@/features/weather/types";
 import type { DashboardTip, DashboardTipPriority } from "./types";
 import { getSpeciesById } from "../species/api";
-
-function getDaysSince(timestamp?: Timestamp | null): number | null {
-  if (!timestamp) return null;
-
-  const date = timestamp.toDate();
-  const now = new Date();
-
-  const diffMs = now.getTime() - date.getTime();
-  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
-}
+import { getDaysSinceWatered } from "../plants/utils/careHistory";
 
 function priorityRank(priority: DashboardTipPriority) {
   switch (priority) {
@@ -27,21 +17,26 @@ function priorityRank(priority: DashboardTipPriority) {
   }
 }
 
-export function generateDashboardTips(
+export async function generateDashboardTips(
   plants: Plant[],
   weatherData: WeatherData,
-): DashboardTip[] {
+): Promise<DashboardTip[]> {
   const tips: DashboardTip[] = [];
 
   const today = weatherData.daily[0];
+  const current = weatherData.current;
 
   if (!today) return tips;
 
   for (const plant of plants) {
-    const daysSinceWatered = getDaysSince(plant.lastWatered);
-
+    const daysSinceWatered = getDaysSinceWatered(plant.careHistory);
+    const speciesId = plant.speciesId;
+    const species = await getSpeciesById(speciesId);
     // 1) No watering history
-    if (!plant.lastWatered) {
+    if (
+      !plant.careHistory?.watering ||
+      plant.careHistory?.watering.length === 0
+    ) {
       tips.push({
         id: `no-water-history-${plant.id}`,
         plantId: plant.id,
@@ -127,7 +122,11 @@ export function generateDashboardTips(
     }
 
     // 7) Cold warning for outdoor plants
-    if (!plant.isIndoor && today.tempMin <= 3) {
+    if (
+      !plant.isIndoor &&
+      species?.temperature &&
+      today.tempMin <= species?.temperature.min
+    ) {
       tips.push({
         id: `cold-warning-${plant.id}`,
         plantId: plant.id,
@@ -137,6 +136,17 @@ export function generateDashboardTips(
         message:
           "Low temperatures are expected tonight. Protect sensitive outdoor plants.",
         time: "Today",
+      });
+    }
+    // 8) Strong wind warning for outdoor plants
+    if (!plant.isIndoor && current.windSpeed > 15) {
+      tips.push({
+        id: `wind-warning-${plant.id}`,
+        plantId: plant.id,
+        plantName: plant.name,
+        type: "warning",
+        priority: current.windSpeed >= 20 ? "high" : "medium",
+        message: `Strong winds are currently detected in your area. Make sure your ${plant.name} plant is protected.`,
       });
     }
   }

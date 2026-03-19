@@ -51,10 +51,12 @@ export default function DashboardPage() {
   }, [uid, coords.latitude, coords.longitude]);
 
   useEffect(() => {
-    if (!plants.length || !weatherData) return;
-
-    const generated = generateDashboardTips(plants, weatherData);
-    setTips(generated);
+    async function run() {
+      if (!plants.length || !weatherData) return;
+      const generated = await generateDashboardTips(plants, weatherData);
+      setTips(generated);
+    }
+    run();
   }, [plants, weatherData]);
 
   return (
