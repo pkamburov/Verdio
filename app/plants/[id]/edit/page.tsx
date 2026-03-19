@@ -11,7 +11,6 @@ import {
   type Exposure,
   type Position,
 } from "@/features/plants/types";
-import { slugToTitle } from "@/features/plants/utils/format";
 import SpeciesCombobox from "@/features/species/components/SpeciesCombobox";
 import { useSpecies } from "@/features/species/useSpecies";
 
