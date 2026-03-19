@@ -162,7 +162,7 @@ export function NotesCard({ userId, plantId }: NotesCardProps) {
                         ></Pencil>
 
                         <Trash2
-                          className="text-m text-red-500 hover:text-red-700"
+                          className="text-sm text-red-500 hover:text-red-700"
                           onClick={() => handleDelete(note.id)}
                         ></Trash2>
                       </div>

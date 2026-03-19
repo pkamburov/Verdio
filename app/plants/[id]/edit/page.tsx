@@ -35,8 +35,6 @@ export default function EditPlantPage() {
   const [exposure, setExposure] = useState<Exposure | "">("");
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  const latinName = slugToTitle(speciesId);
-
   // Auth guard
   useEffect(() => {
     if (!loading && !uid) router.push("/login");
