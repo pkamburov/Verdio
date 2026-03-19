@@ -2,16 +2,24 @@
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Droplets } from "lucide-react";
+import { Calendar, Droplets, Sprout } from "lucide-react";
 
 type QuickActionsCardProps = {
   watering: boolean;
+  repotting: boolean;
+  fertilizing: boolean;
   handleMarkAsWatered: () => void;
+  handleMarkAsRepotted: () => void;
+  handleMarkAsFertilized: () => void;
 };
 
 export function QuickActionsCard({
   watering,
+  repotting,
+  fertilizing,
   handleMarkAsWatered,
+  handleMarkAsRepotted,
+  handleMarkAsFertilized,
 }: QuickActionsCardProps) {
   return (
     <Card className="p-6 bg-linear-to-r from-green-500 to-emerald-600 border-0 text-white">
@@ -23,19 +31,32 @@ export function QuickActionsCard({
           onClick={handleMarkAsWatered}
           disabled={watering}
         >
-          <Droplets className="w-4 h-4 mr-2" />
+          <Droplets className="w-4 h-4" />
           {watering ? "Saving" : "Mark as Watered"}
         </Button>
         <Button
           variant="secondary"
-          className="bg-white text-green-700 hover:bg-green-50"
+          className="bg-white text-green-700 hover:bg-green-50 cursor-pointer"
+          onClick={handleMarkAsRepotted}
+          disabled={repotting}
         >
-          Add Note
+          <Sprout />
+          {repotting ? "Saving" : "Mark as Repotted"}
         </Button>
         <Button
           variant="secondary"
-          className="bg-white text-green-700 hover:bg-green-50"
+          className="bg-white text-green-700 hover:bg-green-50 cursor-pointer"
+          onClick={handleMarkAsFertilized}
+          disabled={fertilizing}
         >
+          <Sprout />
+          {fertilizing ? "Saving" : "Mark as Fertilized"}
+        </Button>
+        <Button
+          variant="secondary"
+          className="bg-white text-green-700 hover:bg-green-50 cursor-pointer"
+        >
+          <Calendar />
           Set Reminder
         </Button>
       </div>

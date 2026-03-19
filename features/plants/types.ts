@@ -15,8 +15,8 @@ export type Plant = {
   exposure?: Exposure | "" | null;
   createdAt?: Timestamp | null;
   updatedAt?: Timestamp | null;
-  lastWatered?: Timestamp | null;
-  notes?: Notes[];
+  careHistory?: CareHistory;
+  notes?: Note[];
 };
 
 export type PlantCreateInput = {
@@ -27,12 +27,27 @@ export type PlantCreateInput = {
   exposure?: Exposure | "" | null;
   imageUrl?: string | null;
   imagePath?: string | null;
-  lastWatered?: Timestamp | null;
+  careHistory: CareHistory;
 };
 
-export type Notes = {
+export type Note = {
+  id: string;
   text: string;
   createdAt: Timestamp | null;
 };
 
-export type UpdatePlantInput = Partial<PlantCreateInput>;
+export type NoteCreateInput = {
+  text: string;
+};
+
+export type CareHistory = {
+  watering: Timestamp[];
+  repotting: Timestamp[];
+  fertilizing: Timestamp[];
+};
+
+export type UpdatePlantInput = Partial<
+  Omit<PlantCreateInput, "careHistory">
+> & {
+  careHistory?: Partial<CareHistory>;
+};

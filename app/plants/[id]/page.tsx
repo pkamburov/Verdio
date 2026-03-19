@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/auth-context";
-import { getPlant, deletePlant, markAsWatered } from "@/features/plants/api";
+import {
+  getPlant,
+  deletePlant,
+  markAsWatered,
+  markAsRepotted,
+  markAsFertilized,
+} from "@/features/plants/api";
 import { getSpeciesById } from "@/features/species/api";
 
 import type { Plant } from "@/features/plants/types";
@@ -34,6 +40,8 @@ export default function PlantDetailsPage() {
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [watering, setWatering] = useState(false);
+  const [repotting, setRepotting] = useState(false);
+  const [fertilizing, setFertilizing] = useState(false);
 
   const speciesId = useMemo(() => plant?.speciesId?.trim() ?? "", [plant]);
   const scoreResult = useMemo(() => {
@@ -76,6 +84,30 @@ export default function PlantDetailsPage() {
       await fetchPlant();
     } finally {
       setWatering(false);
+    }
+  }
+
+  async function handleMarkAsRepotted() {
+    if (!uid || !plantId) return;
+
+    try {
+      setRepotting(true);
+      await markAsRepotted(uid, plantId);
+      await fetchPlant();
+    } finally {
+      setRepotting(false);
+    }
+  }
+
+  async function handleMarkAsFertilized() {
+    if (!uid || !plantId) return;
+
+    try {
+      setFertilizing(true);
+      await markAsFertilized(uid, plantId);
+      await fetchPlant();
+    } finally {
+      setFertilizing(false);
     }
   }
 
@@ -190,7 +222,11 @@ export default function PlantDetailsPage() {
 
       <QuickActionsCard
         watering={watering}
+        repotting={repotting}
+        fertilizing={fertilizing}
         handleMarkAsWatered={handleMarkAsWatered}
+        handleMarkAsRepotted={handleMarkAsRepotted}
+        handleMarkAsFertilized={handleMarkAsFertilized}
       />
 
       <SpeciesGuideCard

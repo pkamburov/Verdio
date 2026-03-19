@@ -1,6 +1,7 @@
 import { db } from "@/lib/firebase/client";
 import {
   addDoc,
+  arrayUnion,
   collection,
   deleteDoc,
   doc,
@@ -107,8 +108,29 @@ export async function getPlants(uid: string) {
 }
 
 export async function markAsWatered(uid: string, plantId: string) {
-  return updatePlant(uid, plantId, {
-    lastWatered: Timestamp.now(),
+  const ref = doc(db, "users", uid, "plants", plantId);
+
+  return updateDoc(ref, {
+    "careHistory.watering": arrayUnion(Timestamp.now()),
+    updatedAt: Timestamp.now(),
+  });
+}
+
+export async function markAsRepotted(uid: string, plantId: string) {
+  const ref = doc(db, "users", uid, "plants", plantId);
+
+  return updateDoc(ref, {
+    "careHistory.repotting": arrayUnion(Timestamp.now()),
+    updatedAt: Timestamp.now(),
+  });
+}
+
+export async function markAsFertilized(uid: string, plantId: string) {
+  const ref = doc(db, "users", uid, "plants", plantId);
+
+  return updateDoc(ref, {
+    "careHistory.fertilizing": arrayUnion(Timestamp.now()),
+    updatedAt: Timestamp.now(),
   });
 }
 

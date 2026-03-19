@@ -236,7 +236,7 @@ export function SpeciesGuideCard({
               Last Watered
             </h4>
             <p className="text-gray-700">
-              {getDaysSinceWatered(plant.lastWatered)}
+              {getDaysSinceWatered(plant.careHistory?.watering)}
             </p>
           </div>
         </TabsContent>
@@ -273,27 +273,27 @@ export function SpeciesGuideCard({
               <Scissors className="w-4 h-4" />
               Pruning
             </h4>
-            <p className="text-gray-700 leading-relaxed">
+            <div className="text-gray-700 leading-relaxed">
               {renderSeasonList(species?.pruningSeasons)}
-            </p>
+            </div>
           </div>
           <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-100">
             <h4 className="font-semibold text-indigo-900 mb-2 flex items-center gap-2">
               <Sparkles className="w-4 h-4" />
               Repotting
             </h4>
-            <p className="text-gray-700 leading-relaxed">
+            <div className="text-gray-700 leading-relaxed">
               {renderSeasonList(species?.repottingSeasons)}
-            </p>
+            </div>
           </div>
           <div className="bg-teal-50 rounded-lg p-4 border border-teal-100">
             <h4 className="font-semibold text-teal-900 mb-2 flex items-center gap-2">
               <Droplets className="w-4 h-4" />
               Fertilizing
             </h4>
-            <p className="text-gray-700 leading-relaxed">
+            <div className="text-gray-700 leading-relaxed">
               {renderSeasonList(species?.fertilizingSeasons)}
-            </p>
+            </div>
           </div>
         </TabsContent>
       </Tabs>

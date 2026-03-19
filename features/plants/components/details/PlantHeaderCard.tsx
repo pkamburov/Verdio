@@ -15,6 +15,7 @@ import {
 } from "@/features/plants/utils/format";
 
 import { Droplets, Sun, CompassIcon, Calendar } from "lucide-react";
+import { getLastWatered } from "../../utils/careHistory";
 
 type PlantScore = {
   percent: number;
@@ -142,7 +143,7 @@ export function PlantHeaderCard({
               <div>
                 <p className="font-medium text-gray-900">Last Watered</p>
                 <p className="text-sm text-gray-600">
-                  {getDaysSinceWatered(plant.lastWatered) ?? "—"}
+                  {getDaysSinceWatered(plant.careHistory?.watering) ?? "—"}
                 </p>
               </div>
             </div>

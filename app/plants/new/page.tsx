@@ -74,6 +74,11 @@ export default function NewPlantPage() {
         exposure: exposure || null,
         imageUrl,
         imagePath,
+        careHistory: {
+          watering: [],
+          repotting: [],
+          fertilizing: [],
+        },
       });
 
       if (imageFile) {

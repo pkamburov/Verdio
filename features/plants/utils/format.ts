@@ -64,10 +64,11 @@ export function slugToTitle(slug: string | undefined): string | undefined {
     .join(" ");
 }
 
-export function getDaysSinceWatered(lastWatered?: Timestamp | null): string {
-  if (!lastWatered) return "Not watered yet";
+export function getDaysSinceWatered(dates?: Timestamp[]): string {
+  if (!dates || dates.length === 0) return "Not watered yet";
 
-  const wateredDate = lastWatered.toDate();
+  const latest = dates.reduce((a, b) => (a.toMillis() > b.toMillis() ? a : b));
+  const wateredDate = latest.toDate();
   const now = new Date();
 
   const diffMs = now.getTime() - wateredDate.getTime();
@@ -75,6 +76,38 @@ export function getDaysSinceWatered(lastWatered?: Timestamp | null): string {
 
   if (diffDays === 0) return "Watered today";
   if (diffDays === 1) return "Watered yesterday";
+
+  return `${diffDays} days ago`;
+}
+
+export function getDaysSinceRepotted(dates?: Timestamp[]): string {
+  if (!dates || dates.length === 0) return "Not repotted yet";
+
+  const latest = dates.reduce((a, b) => (a.toMillis() > b.toMillis() ? a : b));
+  const wateredDate = latest.toDate();
+  const now = new Date();
+
+  const diffMs = now.getTime() - wateredDate.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "Repotted today";
+  if (diffDays === 1) return "Repotted yesterday";
+
+  return `${diffDays} days ago`;
+}
+
+export function getDaysSinceFertilized(dates?: Timestamp[]): string {
+  if (!dates || dates.length === 0) return "Not fertilized yet";
+
+  const latest = dates.reduce((a, b) => (a.toMillis() > b.toMillis() ? a : b));
+  const wateredDate = latest.toDate();
+  const now = new Date();
+
+  const diffMs = now.getTime() - wateredDate.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "Fertilized today";
+  if (diffDays === 1) return "Fertilized yesterday";
 
   return `${diffDays} days ago`;
 }

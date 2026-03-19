@@ -3,6 +3,8 @@
 import { Card } from "@/components/ui/Card";
 import { Plant } from "../../types";
 import { getDaysSinceWatered } from "../../utils/format";
+import { getDaysSinceRepotted } from "../../utils/format";
+import { getDaysSinceFertilized } from "../../utils/format";
 
 type CareHistoryCardProps = {
   plant: Plant;
@@ -20,22 +22,32 @@ export function CareHistoryCard({ plant }: CareHistoryCardProps) {
           <div className="flex-1">
             <p className="text-gray-900">Last watered</p>
             <p className="text-sm text-gray-500">
-              {plant.lastWatered ? getDaysSinceWatered(plant.lastWatered) : "-"}
+              {plant.careHistory?.watering
+                ? getDaysSinceWatered(plant.careHistory.watering)
+                : "-"}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
           <div className="flex-1">
-            <p className="text-gray-900">Fertilized</p>
-            <p className="text-sm text-gray-500">February 15, 2026</p>
+            <p className="text-gray-900">Repotted</p>
+            <p className="text-sm text-gray-500">
+              {plant.careHistory?.repotting
+                ? getDaysSinceRepotted(plant.careHistory.repotting)
+                : "-"}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
           <div className="flex-1">
-            <p className="text-gray-900">Repotted</p>
-            <p className="text-sm text-gray-500">January 10, 2026</p>
+            <p className="text-gray-900">Fertilized</p>
+            <p className="text-sm text-gray-500">
+              {plant.careHistory?.fertilizing
+                ? getDaysSinceFertilized(plant.careHistory.fertilizing)
+                : "-"}
+            </p>
           </div>
         </div>
       </div>
