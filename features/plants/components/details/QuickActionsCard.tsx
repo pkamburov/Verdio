@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Calendar, Droplets, Sprout } from "lucide-react";
+import { Droplets, Sprout, Flower2 } from "lucide-react";
 
 type QuickActionsCardProps = {
   watering: boolean;
@@ -49,15 +49,8 @@ export function QuickActionsCard({
           onClick={handleMarkAsFertilized}
           disabled={fertilizing}
         >
-          <Sprout />
+          <Flower2 />
           {fertilizing ? "Saving" : "Mark as Fertilized"}
-        </Button>
-        <Button
-          variant="secondary"
-          className="bg-white text-green-700 hover:bg-green-50 cursor-pointer"
-        >
-          <Calendar />
-          Set Reminder
         </Button>
       </div>
     </Card>

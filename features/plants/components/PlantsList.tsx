@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { listPlants } from "../api";
 import type { Plant } from "../types";
 import Link from "next/link";
@@ -13,36 +13,11 @@ import {
   slugToTitle,
 } from "../utils/format";
 import { getDaysSinceWatered } from "../utils/format";
-import { calculatePlantScore } from "../utils/calculatePlantScore";
 
 export default function PlantList({ uid }: { uid: string }) {
   const [plants, setPlants] = useState<Plant[]>([]);
   const [loading, setLoading] = useState(true);
   const [imageLoading, setImageLoading] = useState(true);
-
-  const getHealthColor = (health: string) => {
-    switch (health) {
-      case "excellent":
-        return "bg-emerald-100 text-emerald-700 border-emerald-200";
-      case "good":
-        return "bg-green-100 text-green-700 border-green-200";
-      case "fair":
-        return "bg-amber-100 text-amber-700 border-amber-200";
-      case "poor":
-        return "bg-red-100 text-red-700 border-red-200";
-      default:
-        return "bg-gray-100 text-gray-700 border-gray-200";
-    }
-  };
-
-  const needsWateringSoon = (nextWatering: string) => {
-    const next = new Date(nextWatering);
-    const today = new Date("2026-03-02");
-    const daysUntil = Math.ceil(
-      (next.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-    );
-    return daysUntil <= 2;
-  };
 
   useEffect(() => {
     async function load() {
@@ -83,22 +58,17 @@ export default function PlantList({ uid }: { uid: string }) {
                   imageLoading ? "opacity-0" : "opacity-100"
                 }`}
               />
-              <div className="absolute top-3 right-3">
-                {/* <Badge
-                    variant="outline"
-                    className={`${getHealthColor(plant.health)} backdrop-blur-sm`}
-                  >
-                    {plant.health}
-                  </Badge> */}
-              </div>
-              {/* {needsWateringSoon(plant.nextWatering) && (
-                  <div className="absolute top-3 left-3">
-                    <Badge className="bg-blue-500 text-white border-0">
-                      <Droplets className="w-3 h-3 mr-1" />
-                      Water Soon
-                    </Badge>
-                  </div>
-                )} */}
+
+              {getDaysSinceWatered(plant.careHistory?.watering).includes(
+                "days",
+              ) && (
+                <div className="absolute top-3 left-3">
+                  <Badge className="bg-blue-500 text-white border-0">
+                    <Droplets className="w-3 h-3 mr-1" />
+                    Water Soon
+                  </Badge>
+                </div>
+              )}
             </div>
 
             {/* Plant Info */}
@@ -115,7 +85,9 @@ export default function PlantList({ uid }: { uid: string }) {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-gray-700">
                   <Droplets className="w-5 h-5 text-blue-500" />
-                  <span>{getDaysSinceWatered(plant.lastWatered)}</span>
+                  <span>
+                    {getDaysSinceWatered(plant.careHistory?.watering)}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-700">
                   <Sun className="w-5 h-5 text-amber-500" />

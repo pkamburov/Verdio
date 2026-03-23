@@ -76,6 +76,7 @@ export function getDaysSinceWatered(dates?: Timestamp[]): string {
 
   if (diffDays === 0) return "Watered today";
   if (diffDays === 1) return "Watered yesterday";
+  if (diffDays === 2) return "Watered two days ago";
 
   return `${diffDays} days ago`;
 }

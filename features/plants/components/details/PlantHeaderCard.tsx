@@ -13,9 +13,12 @@ import {
   getDaysSinceWatered,
   slugToTitle,
 } from "@/features/plants/utils/format";
+import {
+  getSuggestedNextRepotting,
+  getSuggestedNextWatering,
+} from "@/features/shared/format";
 
 import { Droplets, Sun, CompassIcon, Calendar } from "lucide-react";
-import { getLastWatered } from "../../utils/careHistory";
 
 type PlantScore = {
   percent: number;
@@ -38,6 +41,14 @@ export function PlantHeaderCard({
   onDelete,
   score,
 }: PlantHeaderCardProps) {
+  const nextWatering = getSuggestedNextWatering({
+    wateringHistory: plant.careHistory?.watering,
+    intervalDays: species?.watering.intervalDays,
+  });
+  const nextRepotting = getSuggestedNextRepotting({
+    repottingHistory: plant.careHistory?.repotting,
+    repottingSeasons: species?.repottingSeasons,
+  });
   return (
     <Card className="overflow-hidden bg-white/60 backdrop-blur-sm border-green-100">
       <div className="grid md:grid-cols-2 gap-6">
@@ -156,7 +167,21 @@ export function PlantHeaderCard({
 
               <div>
                 <p className="font-medium text-gray-900">Reminders</p>
-                <p className="text-sm text-gray-600">-</p>
+                <div className="text-sm text-gray-600 space-y-1">
+                  <p>
+                    <span className="font-medium text-gray-800">
+                      Next watering:
+                    </span>{" "}
+                    {nextWatering}
+                  </p>
+
+                  <p>
+                    <span className="font-medium text-gray-800">
+                      Next repotting:
+                    </span>{" "}
+                    {nextRepotting}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
