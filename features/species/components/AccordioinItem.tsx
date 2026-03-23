@@ -1,12 +1,14 @@
+import { ReactNode } from "react";
+
 export function AccordionItem({
   title,
   children,
 }: {
-  title: string;
-  children: React.ReactNode;
+  title: ReactNode;
+  children: ReactNode;
 }) {
   return (
-    <details className="rounded-xl border bg-white px-3 py-2">
+    <details className="rounded-xl bg-rose-100 px-3 py-2">
       <summary className="cursor-pointer select-none list-none">
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm font-medium">{title}</span>

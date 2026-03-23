@@ -280,6 +280,7 @@ export function SpeciesGuideCard({
               <Bug className="w-4 h-4" />
               Common Pests to Watch For
             </h4>
+
             {pestsLoading ? (
               <p className="text-sm text-rose-800">Loading pest details...</p>
             ) : !species?.commonPests?.length ? (
@@ -290,7 +291,7 @@ export function SpeciesGuideCard({
                 found.
               </p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-4 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {pests.map((pest) => (
                   <PestCard key={pest.id} pest={pest} />
                 ))}

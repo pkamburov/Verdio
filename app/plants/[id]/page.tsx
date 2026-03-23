@@ -234,7 +234,6 @@ export default function PlantDetailsPage() {
         species={species}
         speciesLoading={speciesLoading}
       />
-
       {!loading && uid ? <NotesCard userId={uid} plantId={plant.id} /> : null}
 
       <CareHistoryCard plant={plant} />
