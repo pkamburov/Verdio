@@ -9,10 +9,11 @@ import {
   Thermometer,
   Droplets,
   Bug,
-  Sparkles,
   Calendar,
   Scissors,
   Compass,
+  Flower2,
+  SunSnow,
 } from "lucide-react";
 import {
   formatPlantExposure,
@@ -24,23 +25,16 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { Species } from "@/features/species/types";
 import { Plant } from "../../types";
 import { titleCaseWords } from "@/features/species/utils/format";
+import { Pest } from "@/features/pests/types";
+import { useEffect, useState } from "react";
+import { getPestsByIds } from "@/features/pests/api";
+import { PestCard } from "./PestsCard";
 
 type SpeciesGuideCardProps = {
   plant: Plant;
   species: Species | null;
   speciesLoading: boolean;
 };
-
-function formatSunHours(species: Species | null) {
-  const min = species?.light?.sunExposureHours?.min;
-  const max = species?.light?.sunExposureHours?.max;
-
-  if (min != null && max != null) return `${min}–${max}h`;
-  if (min != null) return `≥${min}h`;
-  if (max != null) return `≤${max}h`;
-
-  return "—";
-}
 
 function formatTemperatureRange(species: Species | null) {
   const min = species?.temperature?.min;
@@ -72,6 +66,44 @@ export function SpeciesGuideCard({
   species,
   speciesLoading,
 }: SpeciesGuideCardProps) {
+  const [pests, setPests] = useState<Pest[]>([]);
+  const [pestsLoading, setPestsLoading] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadPests() {
+      if (!species?.commonPests?.length) {
+        setPests([]);
+        return;
+      }
+      setPestsLoading(true);
+
+      try {
+        const data = await getPestsByIds(species.commonPests);
+
+        if (!cancelled) {
+          setPests(data);
+        }
+      } catch (error) {
+        console.error("Failed to load pests:", error);
+
+        if (!cancelled) {
+          setPests([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setPestsLoading(false);
+        }
+      }
+    }
+
+    loadPests();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [species?.commonPests]);
+
   if (speciesLoading) {
     return (
       <Card className="p-6 bg-white/60 backdrop-blur-sm border-green-100">
@@ -148,7 +180,7 @@ export function SpeciesGuideCard({
             Pests
           </TabsTrigger>
           <TabsTrigger value="seasonal" className="text-sm lg:text-sm">
-            <Sparkles className="w-4 h-4 mr-1" />
+            <SunSnow className="w-4 h-4 mr-1" />
             Seasonal
           </TabsTrigger>
         </TabsList>
@@ -248,21 +280,22 @@ export function SpeciesGuideCard({
               <Bug className="w-4 h-4" />
               Common Pests to Watch For
             </h4>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {species?.commonPests
-                ? species?.commonPests.map((pest, index) => (
-                    <div
-                      key={index}
-                      className="bg-white rounded-lg p-3 border border-rose-200 flex items-center gap-2"
-                    >
-                      <div className="w-2 h-2 bg-rose-500 rounded-full"></div>
-                      <span className="text-gray-700">
-                        {titleCaseWords(pest)}
-                      </span>
-                    </div>
-                  ))
-                : ""}
-            </div>
+            {pestsLoading ? (
+              <p className="text-sm text-rose-800">Loading pest details...</p>
+            ) : !species?.commonPests?.length ? (
+              <p className="text-sm text-rose-800">No common pests listed.</p>
+            ) : pests.length === 0 ? (
+              <p className="text-sm text-rose-800">
+                Pest Ids are listed for this species, but no pest details were
+                found.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {pests.map((pest) => (
+                  <PestCard key={pest.id} pest={pest} />
+                ))}
+              </div>
+            )}
           </div>
         </TabsContent>
 
@@ -279,7 +312,7 @@ export function SpeciesGuideCard({
           </div>
           <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-100">
             <h4 className="font-semibold text-indigo-900 mb-2 flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
+              <Sprout className="w-4 h-4" />
               Repotting
             </h4>
             <div className="text-gray-700 leading-relaxed">
@@ -288,7 +321,7 @@ export function SpeciesGuideCard({
           </div>
           <div className="bg-teal-50 rounded-lg p-4 border border-teal-100">
             <h4 className="font-semibold text-teal-900 mb-2 flex items-center gap-2">
-              <Droplets className="w-4 h-4" />
+              <Flower2 className="w-4 h-4" />
               Fertilizing
             </h4>
             <div className="text-gray-700 leading-relaxed">

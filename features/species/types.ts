@@ -49,13 +49,3 @@ export type Species = {
 
   commonPests?: string[];
 };
-
-export type Pest = {
-  id: string;
-  name: string;
-  description: string;
-  symptoms: string[];
-  treatment: string[];
-  prevention?: string[];
-  riskSeasons?: SeasonKey[];
-};
