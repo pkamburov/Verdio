@@ -56,7 +56,6 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!uid) return;
     let cancelled = false;
-    const currentId = uid;
 
     async function run() {
       try {
@@ -64,8 +63,6 @@ export default function DashboardPage() {
         setWeatherError(null);
 
         const data = await getWeather(coords.latitude, coords.longitude);
-        const plantsData = await getPlants(currentId);
-        setPlants(plantsData);
 
         if (!cancelled) setWeatherData(data);
       } catch (e) {
@@ -80,6 +77,17 @@ export default function DashboardPage() {
       cancelled = true;
     };
   }, [uid, coords.latitude, coords.longitude]);
+
+  useEffect(() => {
+    if (!uid) return;
+    const currentId = uid;
+
+    async function run() {
+      const plantsData = await getPlants(currentId);
+      setPlants(plantsData);
+    }
+    run();
+  }, [uid]);
 
   useEffect(() => {
     async function run() {
