@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Home, LayoutDashboard, Sprout } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { cn } from "./ui/utils";
+import { useRouter } from "next/navigation";
 
 type NavItem = {
   path: string;
@@ -16,6 +17,12 @@ type NavItem = {
 export default function NavBar() {
   const pathname = usePathname() ?? "/";
   const { uid, loading, signInWithGoogle, signOutUser } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await signOutUser();
+    router.push("/");
+  };
 
   const navItems: NavItem[] = [
     { path: "/", label: "Home", icon: Home },
@@ -79,7 +86,7 @@ export default function NavBar() {
               <span className="px-3 text-sm text-neutral-500">…</span>
             ) : uid ? (
               <button
-                onClick={signOutUser}
+                onClick={handleLogout}
                 className="ml-1 rounded-lg px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100"
               >
                 Logout
