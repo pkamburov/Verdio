@@ -86,14 +86,14 @@ export default function Home() {
       {/* Image Section */}
       <div className="relative h-96 rounded-2xl overflow-hidden shadow-xl">
         <img
-          src="https://images.unsplash.com/photo-1667992714862-df8713baf8c6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnYXJkZW4lMjB3YXRlcmluZyUyMGNhbnxlbnwxfHx8fDE3NzI0NDg4NTR8MA&ixlib=rb-4.1.0&q=80&w=1080"
+          src="/images/bonsai-garden.jpg"
           alt="Garden watering"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent flex items-end">
           <div className="p-8 text-white">
             <h2 className="text-3xl font-semibold mb-2">
-              Cultivate Your Green Space
+              Cultivate Your Bonsai Garden
             </h2>
             <p className="text-lg text-white/90">
               From beginner-friendly succulents to majestic fiddle leaf figs
