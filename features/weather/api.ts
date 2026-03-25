@@ -1,4 +1,34 @@
-import { DailyForecast, OpenMeteoResponse, WeatherData } from "./types";
+import {
+  getCachedWeather,
+  isCachedWeatherValid,
+  setCachedWeather,
+} from "./cache";
+import { OpenMeteoResponse, WeatherData } from "./types";
+
+export async function getWeatherWithCache(
+  uid: string,
+  latitude: number,
+  longitude: number,
+): Promise<WeatherData> {
+  const cached = getCachedWeather(uid);
+
+  if (cached && isCachedWeatherValid(cached, latitude, longitude)) {
+    console.log("Weather loaded from cache");
+    return cached.data;
+  }
+
+  console.log("Weather loaded from api");
+  const freshData = await getWeather(latitude, longitude);
+
+  setCachedWeather(uid, {
+    latitude,
+    longitude,
+    fetchedAt: Date.now(),
+    data: freshData,
+  });
+
+  return freshData;
+}
 
 export async function getWeather(
   latitude: number,

@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import Link from "next/link";
-import { getWeather } from "@/features/weather/api";
+import { getWeather, getWeatherWithCache } from "@/features/weather/api";
 import { WeatherCard } from "@/components/ui/WeatherCard";
 import { WeatherData } from "@/features/weather/types";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -16,17 +16,30 @@ import { useSpecies } from "@/features/species/useSpecies";
 import { countPlantsNeedingWater } from "@/features/tips/utils";
 import { getPlants } from "@/features/plants/api";
 import { countHealthyPlants } from "@/features/plants/utils/countHealthyPlants";
+import { UserLocationSettings } from "@/features/location/types";
+import {
+  getUserLocationSettings,
+  saveUserLocationSettings,
+} from "@/features/location/api";
+import { getCurrentBrowserLocation } from "@/features/location/browser";
+import {
+  getCachedUserLocation,
+  setCachedUserLocation,
+} from "@/features/location/cache";
 
 export default function DashboardPage() {
   const { uid } = useAuth();
-  const { species, loading } = useSpecies();
+  const { species } = useSpecies();
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [weatherError, setWeatherError] = useState<string | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [plants, setPlants] = useState<Plant[]>([]);
   const [tips, setTips] = useState<DashboardTip[]>([]);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [locationSettings, setLocationSettings] =
+    useState<UserLocationSettings | null>(null);
 
-  const coords = useMemo(() => ({ latitude: 42.697, longitude: 23.3219 }), []);
   const speciesMap = useMemo<Record<string, Species>>(
     () => Object.fromEntries(species.map((s) => [s.id, s])),
     [species],
@@ -42,7 +55,7 @@ export default function DashboardPage() {
     );
   }, [plants, species, speciesMap]);
 
-  const needWaterCount = useMemo(() => {
+  const plantsNeedingWater = useMemo(() => {
     if (!plants.length || !species.length) return [];
 
     return countPlantsNeedingWater(
@@ -56,13 +69,41 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!uid) return;
     let cancelled = false;
+    const currentId = uid;
+
+    async function run() {
+      const plantsData = await getPlants(currentId);
+      if (!cancelled) {
+        setPlants(plantsData);
+      }
+    }
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [uid]);
+
+  useEffect(() => {
+    if (!uid || !locationSettings) {
+      setWeatherData(null);
+      setWeatherError(null);
+      return;
+    }
+
+    const currentId = uid;
+    const currentLocationSettings = locationSettings;
+    let cancelled = false;
 
     async function run() {
       try {
         setWeatherLoading(true);
         setWeatherError(null);
 
-        const data = await getWeather(coords.latitude, coords.longitude);
+        const data = await getWeatherWithCache(
+          currentId,
+          currentLocationSettings.latitude,
+          currentLocationSettings.longitude,
+        );
 
         if (!cancelled) setWeatherData(data);
       } catch (e) {
@@ -76,18 +117,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [uid, coords.latitude, coords.longitude]);
-
-  useEffect(() => {
-    if (!uid) return;
-    const currentId = uid;
-
-    async function run() {
-      const plantsData = await getPlants(currentId);
-      setPlants(plantsData);
-    }
-    run();
-  }, [uid]);
+  }, [uid, locationSettings]);
 
   useEffect(() => {
     async function run() {
@@ -98,6 +128,90 @@ export default function DashboardPage() {
 
     run();
   }, [plants, weatherData]);
+
+  useEffect(() => {
+    if (!uid) return;
+
+    const currentId = uid;
+    let cancelled = false;
+
+    const cachedLocation = getCachedUserLocation(currentId);
+    if (cachedLocation) {
+      setLocationSettings(cachedLocation);
+    }
+
+    async function run() {
+      const savedLocation = await getUserLocationSettings(currentId);
+      if (!cancelled && savedLocation) {
+        setLocationSettings({
+          source: savedLocation.source,
+          latitude: savedLocation.latitude,
+          longitude: savedLocation.longitude,
+          label: savedLocation.label,
+        });
+        setCachedUserLocation(currentId, {
+          source: savedLocation.source,
+          latitude: savedLocation.latitude,
+          longitude: savedLocation.longitude,
+          label: savedLocation.label,
+        });
+      }
+    }
+    run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [uid]);
+
+  async function handleUseCurrentLocation() {
+    if (!uid) return;
+    const currentUid = uid;
+
+    try {
+      setLocationLoading(true);
+      setLocationError(null);
+
+      const coords = await getCurrentBrowserLocation();
+
+      await saveUserLocationSettings(currentUid, {
+        source: "gps",
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        label: "Current location",
+      });
+
+      const savedLocation = await getUserLocationSettings(currentUid);
+      setLocationSettings(savedLocation);
+    } catch (error: unknown) {
+      console.error("Location flow error:", error);
+
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        typeof error.code === "number"
+      ) {
+        switch (error.code) {
+          case 1:
+            setLocationError("Location access was denied.");
+            break;
+          case 2:
+            setLocationError("Unable to determine your location.");
+            break;
+          case 3:
+            setLocationError("Location request timed out.");
+            break;
+          default:
+            setLocationError("Failed to get your location.");
+        }
+      } else if (error instanceof Error) {
+        setLocationError(error.message);
+      } else {
+        setLocationError("Failed to get your location.");
+      }
+    }
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -110,16 +224,39 @@ export default function DashboardPage() {
           Monitor your garden's health and get personalized care tips
         </p>
       </div>
+      {!locationSettings ? (
+        <Card className="p-4 bg-white/60 backdrop-blur-sm border-green-100">
+          <h3 className="text-lg font-semibold text-green-900">
+            Set your location
+          </h3>
+          <p className="text-sm text-gray-600 mt-1">
+            Allow location access to see local weather and personalized plant
+            tips.
+          </p>
 
+          {locationError && (
+            <p className="text-sm text-red-600 mt-3">{locationError}</p>
+          )}
+
+          <button onClick={handleUseCurrentLocation} disabled={locationLoading}>
+            {locationLoading
+              ? "Getting location..."
+              : "Use my current location"}
+          </button>
+        </Card>
+      ) : null}
       {/* Weather Conditions Section */}
-      <section>
-        <h2 className="text-2xl font-semibold text-green-900 mb-4">
-          Weather Conditions
-        </h2>
-        {weatherLoading && <div>Loading weather...</div>}
-        {weatherError && <div className="text-red-600">{weatherError}</div>}
-        {weatherData ? <WeatherCard weatherData={weatherData} /> : null}
-      </section>
+
+      {locationSettings ? (
+        <section>
+          <h2 className="text-2xl font-semibold text-green-900 mb-4">
+            Weather Conditions
+          </h2>
+          {weatherLoading && <div>Loading weather...</div>}
+          {weatherError && <div className="text-red-600">{weatherError}</div>}
+          {weatherData ? <WeatherCard weatherData={weatherData} /> : null}
+        </section>
+      ) : null}
 
       {/* Quick Stats */}
       <section>
@@ -136,7 +273,7 @@ export default function DashboardPage() {
           <Card className="p-4 bg-white/60 backdrop-blur-sm border-green-100">
             <p className="text-sm text-gray-600">Need Water</p>
             <p className="text-3xl font-semibold text-blue-600 mt-1">
-              {needWaterCount.length}
+              {plantsNeedingWater.length}
             </p>
           </Card>
           <Card className="p-4 bg-white/60 backdrop-blur-sm border-green-100">

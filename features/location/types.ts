@@ -7,5 +7,5 @@ export type UserLocationSettings = {
   latitude: number;
   longitude: number;
   label?: string;
-  updatedAt: Timestamp;
+  updatedAt?: Timestamp;
 };
