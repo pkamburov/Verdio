@@ -16,7 +16,10 @@ import { useSpecies } from "@/features/species/useSpecies";
 import { countPlantsNeedingWater } from "@/features/tips/utils";
 import { getPlants } from "@/features/plants/api";
 import { countHealthyPlants } from "@/features/plants/utils/countHealthyPlants";
-import { UserLocationSettings } from "@/features/location/types";
+import {
+  LocationSearchResult,
+  UserLocationSettings,
+} from "@/features/location/types";
 import {
   getUserLocationSettings,
   saveUserLocationSettings,
@@ -26,6 +29,7 @@ import {
   getCachedUserLocation,
   setCachedUserLocation,
 } from "@/features/location/cache";
+import { searchLocations } from "@/features/location/geocoding";
 
 export default function DashboardPage() {
   const { uid } = useAuth();
@@ -37,6 +41,12 @@ export default function DashboardPage() {
   const [tips, setTips] = useState<DashboardTip[]>([]);
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [manualQuery, setManualQuery] = useState("");
+  const [manualResults, setManualResults] = useState<LocationSearchResult[]>(
+    [],
+  );
+  const [manualLoading, setManualLoading] = useState(false);
+  const [manualError, setManualError] = useState<string | null>(null);
   const [locationSettings, setLocationSettings] =
     useState<UserLocationSettings | null>(null);
 
@@ -213,6 +223,55 @@ export default function DashboardPage() {
     }
   }
 
+  async function handleManualLocationSearch() {
+    try {
+      setManualLoading(true);
+      setManualError(null);
+
+      const results = await searchLocations(manualQuery);
+      setManualResults(results);
+
+      if (!results.length) {
+        setManualError("No locations found.");
+      }
+    } catch (error) {
+      console.error(error);
+      setManualError("Failed to search locations.");
+    } finally {
+      setManualLoading(false);
+    }
+  }
+
+  async function handleSelectManualLocation(result: LocationSearchResult) {
+    if (!uid) return;
+    const currentUid = uid;
+
+    const nextLocation = {
+      source: "manual" as const,
+      latitude: result.latitude,
+      longitude: result.longitude,
+      label: result.label,
+    };
+
+    try {
+      setLocationLoading(true);
+      setLocationError(null);
+
+      await saveUserLocationSettings(currentUid, nextLocation);
+      setCachedUserLocation(currentUid, nextLocation);
+      setLocationSettings(nextLocation);
+
+      setManualResults([]);
+      setManualQuery("");
+      setManualError(null);
+    } catch (error) {
+      console.error(error);
+      setLocationError("Failed to save selected location.");
+    } finally {
+      setLocationLoading(false);
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto space-y-8">
       {/* Page Header */}
@@ -243,6 +302,44 @@ export default function DashboardPage() {
               ? "Getting location..."
               : "Use my current location"}
           </button>
+          <div className="mt-4 border-t border-green-100 pt-4">
+            <p className="text-sm text-gray-600 mb-2">
+              Or set your location manually
+            </p>
+
+            <div className="flex gap-2">
+              <input
+                value={manualQuery}
+                onChange={(e) => setManualQuery(e.target.value)}
+                placeholder="Enter city"
+                className="..."
+              />
+              <button
+                onClick={handleManualLocationSearch}
+                disabled={manualLoading}
+              >
+                {manualLoading ? "Searching..." : "Search"}
+              </button>
+            </div>
+
+            {manualError && (
+              <p className="text-sm text-red-600 mt-2">{manualError}</p>
+            )}
+
+            {manualResults.length > 0 ? (
+              <div className="mt-3 space-y-2">
+                {manualResults.map((result) => (
+                  <button
+                    key={`${result.latitude}-${result.longitude}-${result.label}`}
+                    onClick={() => handleSelectManualLocation(result)}
+                    className="w-full text-left ..."
+                  >
+                    {result.label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
         </Card>
       ) : null}
       {/* Weather Conditions Section */}
