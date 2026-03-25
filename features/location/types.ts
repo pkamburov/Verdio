@@ -9,3 +9,12 @@ export type UserLocationSettings = {
   label?: string;
   updatedAt?: Timestamp;
 };
+
+export type LocationSearchResult = {
+  name: string;
+  country?: string;
+  admin1?: string;
+  latitude: number;
+  longitude: number;
+  label: string;
+};
