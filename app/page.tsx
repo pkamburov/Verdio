@@ -2,42 +2,57 @@ import Link from "next/link";
 import { Sprout, CloudSun, Bell, Droplets, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import Image from "next/image";
 
 export default function Home() {
   return (
     <div className="max-w-6xl mx-auto space-y-12">
       {/* Hero Section */}
-      <div className="text-center space-y-6 py-12">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg">
-          <Sprout className="w-12 h-12 text-white" />
-        </div>
-        <h1 className="text-5xl md:text-6xl font-bold text-green-900">
-          Welcome to Verdio
-        </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Your personal assistant for maintaining a thriving indoor garden.
-          Track your plants, get care reminders, and watch your green space
-          flourish.
-        </p>
-        <div className="flex gap-4 justify-center pt-4">
-          <Link href="/plants">
-            <Button
-              size="lg"
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              View My Plants
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          </Link>
-          <Link href="/dashboard">
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-green-300 text-green-700 hover:bg-green-50"
-            >
-              Go to Dashboard
-            </Button>
-          </Link>
+      <div className="relative text-center space-y-6 py-12 rounded-lg overflow-hidden">
+        <Image
+          src="/images/bonsai-header.jpg"
+          alt="Plants background"
+          fill
+          className="object-cover"
+          priority
+        />
+
+        <div className="absolute inset-0 bg-white/30" />
+
+        <div className="relative z-10">
+          <div className="text-center space-y-6 py-12">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg">
+              <Sprout className="w-12 h-12 text-white" />
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold text-green-700">
+              Welcome to Verdio
+            </h1>
+            <p className="text-xl text-white max-w-2xl mx-auto">
+              Your personal assistant for maintaining a thriving bonsai garden.
+              Track your plants, get care reminders, and watch your green space
+              flourish.
+            </p>
+            <div className="flex gap-4 justify-center pt-4">
+              <Link href="/plants">
+                <Button
+                  size="lg"
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  View My Plants
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
+              <Link href="/dashboard">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-green-300 text-green-700 hover:bg-green-50"
+                >
+                  Go to Dashboard
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 
