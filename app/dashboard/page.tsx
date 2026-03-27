@@ -32,7 +32,7 @@ import {
 import { searchLocations } from "@/features/location/geocoding";
 
 export default function DashboardPage() {
-  const { uid } = useAuth();
+  const { uid, loading, signInWithGoogle } = useAuth();
   const { species } = useSpecies();
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [weatherError, setWeatherError] = useState<string | null>(null);
@@ -283,7 +283,23 @@ export default function DashboardPage() {
           Monitor your garden's health and get personalized care tips
         </p>
       </div>
-      {!locationSettings ? (
+
+      {!uid && !locationSettings ? (
+        <div>
+          <h2 className="text-2xl font-semibold text-green-900 mb-4">Login</h2>
+          <p className="text-gray-600">
+            Login to receive tips and notifications
+          </p>
+          <button
+            onClick={signInWithGoogle}
+            className="ml-1 mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-sm  font-medium text-white transition-colors hover:bg-emerald-500"
+          >
+            Login
+          </button>
+        </div>
+      ) : null}
+
+      {!locationSettings && uid ? (
         <Card className="p-4 bg-white/60 backdrop-blur-sm border-green-100">
           <h3 className="text-lg font-semibold text-green-900">
             Set your location
