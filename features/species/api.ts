@@ -1,6 +1,7 @@
 import {
   collection,
   orderBy,
+  where,
   getDocs,
   query,
   doc,
@@ -31,4 +32,30 @@ export async function getSpeciesById(
 
   const data = snap.data() as Omit<Species, "id">;
   return { id: snap.id, ...data };
+}
+
+export async function getSpeciesByIds(ids: string[]) {
+  const chunks = [];
+
+  for (let i = 0; i < ids.length; i += 10) {
+    chunks.push(ids.slice(i, i + 10));
+  }
+
+  const results = await Promise.all(
+    chunks.map(async (chunk) => {
+      const q = query(
+        collection(db, "species"),
+        where("__name__", "in", chunk),
+      );
+
+      const snapshot = await getDocs(q);
+
+      return snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+    }),
+  );
+
+  return results.flat();
 }

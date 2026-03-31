@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { listPlants } from "../api";
 import type { Plant } from "../types";
 import Link from "next/link";
@@ -13,22 +13,50 @@ import {
   slugToTitle,
 } from "../utils/format";
 import { getDaysSinceWatered } from "../utils/format";
+import { getSpeciesByIds } from "@/features/species/api";
+import { calculatePlantScore } from "../utils/calculatePlantScore";
+import ScoreCircle from "./ScoreCircle";
 
 export default function PlantList({ uid }: { uid: string }) {
   const [plants, setPlants] = useState<Plant[]>([]);
   const [loading, setLoading] = useState(true);
   const [imageLoading, setImageLoading] = useState(true);
+  const [speciesMap, setSpeciesMap] = useState<Record<string, any>>({});
 
   useEffect(() => {
     async function load() {
-      const data = await listPlants(uid);
-      setPlants(data);
+      setLoading(true);
+
+      const plantsData = await listPlants(uid);
+      const speciesIds = [...new Set(plantsData.map((p) => p.speciesId))];
+      const speciesList = await getSpeciesByIds(speciesIds);
+
+      const map = Object.fromEntries(speciesList.map((s) => [s.id, s]));
+
+      setPlants(plantsData);
+      setSpeciesMap(map);
       setLoading(false);
     }
 
     load();
   }, [uid]);
 
+  const plantsWithScore = useMemo(() => {
+    return plants
+      .map((p) => {
+        const species = speciesMap[p.speciesId];
+        if (!species) return null;
+
+        return {
+          ...p,
+          scoreData: calculatePlantScore({
+            plant: p,
+            species,
+          }),
+        };
+      })
+      .filter(Boolean) as (Plant & { scoreData: any })[];
+  }, [plants, speciesMap]);
   if (loading) {
     return <main className="p-8">Loading plants...</main>;
   }
@@ -37,9 +65,15 @@ export default function PlantList({ uid }: { uid: string }) {
     return <main className="p-8">No plants yet.</main>;
   }
 
+  function getScoreColor(score: number) {
+    if (score >= 70) return "bg-green-500";
+    if (score >= 40) return "bg-yellow-500";
+    return "bg-red-500";
+  }
+
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {plants.map((plant) => (
+      {plantsWithScore.map((plant) => (
         <Link key={plant.id} href={`/plants/${plant.id}`}>
           <Card className="overflow-hidden bg-white/60 backdrop-blur-sm border-green-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer h-full">
             {/* Plant Image */}
@@ -72,33 +106,46 @@ export default function PlantList({ uid }: { uid: string }) {
             </div>
 
             {/* Plant Info */}
-            <div className="p-5 space-y-3">
-              <div>
-                <h3 className="text-xl font-semibold text-green-900">
-                  {plant.name}
-                </h3>
-                <p className="text-sm text-gray-600 italic">
-                  {slugToTitle(plant.speciesId)}
-                </p>
-              </div>
+            <div className="p-5">
+              <div className="flex items-start justify-between gap-4">
+                {/* LEFT */}
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h3 className="text-xl font-semibold text-green-900">
+                      {plant.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 italic">
+                      {slugToTitle(plant.speciesId)}
+                    </p>
+                  </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Droplets className="w-5 h-5 text-blue-500" />
-                  <span>
-                    {getDaysSinceWatered(plant.careHistory?.watering)}
-                  </span>
+                  {/* DETAILS */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <Droplets className="w-5 h-5 text-blue-500" />
+                      <span>
+                        {getDaysSinceWatered(plant.careHistory?.watering)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <Sun className="w-5 h-5 text-amber-500" />
+                      <span>{formatPlantExposure(plant.exposure)}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <CompassIcon className="w-5 h-5 text-green-500" />
+                      <span>
+                        {plant.isIndoor ? "Indoor" : "Outdoor"} /{" "}
+                        {formatPlantPosition(plant.position)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Sun className="w-5 h-5 text-amber-500" />
-                  <span>{formatPlantExposure(plant.exposure)}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <CompassIcon className="w-5 h-5 text-green-500" />
-                  <span>
-                    {plant.isIndoor ? "Indoor" : "Outdoor"} /{" "}
-                    {formatPlantPosition(plant.position)}
-                  </span>
+
+                {/* RIGHT */}
+                <div className="shrink-0 self-center">
+                  <ScoreCircle percent={plant.scoreData.percent} />
                 </div>
               </div>
             </div>
