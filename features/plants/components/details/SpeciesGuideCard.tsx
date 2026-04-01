@@ -29,6 +29,8 @@ import { Pest } from "@/features/pests/types";
 import { useEffect, useState } from "react";
 import { getPestsByIds } from "@/features/pests/api";
 import { PestCard } from "./PestsCard";
+import { seasonsToMonths } from "../../utils/seasonsToMonths";
+import { MonthlyProgressBar } from "./MonthlyProgressBar";
 
 type SpeciesGuideCardProps = {
   plant: Plant;
@@ -308,7 +310,12 @@ export function SpeciesGuideCard({
               Pruning
             </h4>
             <div className="text-gray-700 leading-relaxed">
-              {renderSeasonList(species?.pruningSeasons)}
+              {/* {renderSeasonList(species?.pruningSeasons)} */}
+              <MonthlyProgressBar
+                activeMonths={seasonsToMonths(species?.pruningSeasons ?? [])}
+                color="purple"
+                label="Pruning"
+              />
             </div>
           </div>
           <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-100">
@@ -317,7 +324,12 @@ export function SpeciesGuideCard({
               Repotting
             </h4>
             <div className="text-gray-700 leading-relaxed">
-              {renderSeasonList(species?.repottingSeasons)}
+              {/* {renderSeasonList(species?.repottingSeasons)} */}
+              <MonthlyProgressBar
+                activeMonths={seasonsToMonths(species?.repottingSeasons ?? [])}
+                color="purple"
+                label="Repotting"
+              />
             </div>
           </div>
           <div className="bg-teal-50 rounded-lg p-4 border border-teal-100">
@@ -326,7 +338,14 @@ export function SpeciesGuideCard({
               Fertilizing
             </h4>
             <div className="text-gray-700 leading-relaxed">
-              {renderSeasonList(species?.fertilizingSeasons)}
+              {/* {renderSeasonList(species?.fertilizingSeasons)} */}
+              <MonthlyProgressBar
+                activeMonths={seasonsToMonths(
+                  species?.fertilizingSeasons ?? [],
+                )}
+                color="green"
+                label="Fertilizing"
+              />
             </div>
           </div>
         </TabsContent>
