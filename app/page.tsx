@@ -24,7 +24,7 @@ export default function Home() {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg">
               <Sprout className="w-12 h-12 text-white" />
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold text-green-700">
+            <h1 className="text-5xl md:text-6xl font-bold text-green-700 text-shadow-xl">
               Welcome to Verdio
             </h1>
             <p className="text-xl text-white max-w-2xl mx-auto">
@@ -118,7 +118,7 @@ export default function Home() {
       </div>
 
       {/* Call to Action */}
-      <div className="text-center py-12">
+      <div className="text-center py-2">
         <Card className="p-8 bg-linear-to-r from-green-500 to-emerald-600 border-0 text-white">
           <h2 className="text-3xl font-semibold mb-4">
             Ready to grow your garden?
