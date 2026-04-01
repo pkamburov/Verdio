@@ -42,10 +42,10 @@ type CalculatePlantScoreOptions = {
 };
 
 const SCORE_WEIGHTS = {
-  indoorOutdoor: 10,
-  light: 30,
-  temperature: 30,
-  watering: 20,
+  indoorOutdoor: 15,
+  light: 25,
+  temperature: 25,
+  watering: 25,
   repotting: 10,
 } as const;
 
