@@ -10,7 +10,7 @@ export async function uploadPlantImage(params: {
 
   const ext = file.name.split(".").pop() || "jpg";
   const safeExt = ext.toLowerCase();
-  const path = `users/${uid}/plants/${plantId}/main.${ext}`;
+  const path = `users/${uid}/plants/${plantId}/main.${safeExt}`;
 
   const storageRef = ref(storage, path);
   await uploadBytes(storageRef, file, {

@@ -16,6 +16,7 @@ import {
 } from "@/features/plants/types";
 import SpeciesCombobox from "@/features/species/components/SpeciesCombobox";
 import { useSpecies } from "@/features/species/useSpecies";
+import { uploadPlantImage } from "@/features/plants/uploadPlantImage";
 
 export default function EditPlantPage() {
   const { uid, loading } = useAuth();
@@ -103,15 +104,34 @@ export default function EditPlantPage() {
     setSaving(true);
 
     try {
+      let imageUrl: string | undefined;
+      let imagePath: string | undefined;
+
+      if (imageFile) {
+        const result = await uploadPlantImage({
+          uid,
+          plantId,
+          file: imageFile,
+        });
+
+        imageUrl = result.url;
+        imagePath = result.path;
+      }
+
       await updatePlant(uid, plantId, {
         name: name.trim(),
         speciesId: speciesId.trim() || undefined,
         position: (position || null) as any,
         isIndoor,
         exposure: exposure || null,
+        ...(imageUrl && { imageUrl }),
+        ...(imagePath && { imagePath }),
       });
 
       router.push(`/plants/${plantId}`);
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
     } finally {
       setSaving(false);
     }
