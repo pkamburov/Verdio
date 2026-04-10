@@ -17,7 +17,7 @@ export default function Home() {
           priority
         />
 
-        <div className="absolute inset-0 bg-white/30" />
+        <div className="absolute inset-0" />
 
         <div className="relative z-10">
           <div className="text-center space-y-6 py-12">
